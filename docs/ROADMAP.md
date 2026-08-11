@@ -6,11 +6,9 @@ The repository is published at <https://github.com/vinhnguyenthanhdn/claude-rout
 
 ### Repository settings
 
-Description, topics, Issues, Discussions, secret scanning with push protection, and private vulnerability reporting are configured. Remaining manual step, which has no API:
+Description, topics, Issues, Discussions, secret scanning with push protection, private vulnerability reporting, and the social preview image are configured. Keep the Wiki disabled unless it will be maintained as the single documentation source.
 
-- upload `docs/social-preview.png` under **Settings → General → Social preview**.
-
-Keep the Wiki disabled unless it will be maintained as the single documentation source.
+Re-upload `docs/social-preview.png` under **Settings → General → Social preview** whenever that image changes; there is no API for it.
 
 ### Screenshot review
 
