@@ -2,18 +2,15 @@
 
 The repository is published at <https://github.com/vinhnguyenthanhdn/claude-router>. The items below require GitHub UI actions, external publishing, or post-launch activity.
 
-## Before the first public release
+## Open repository configuration
 
 ### Repository settings
 
-Configure these in GitHub:
+Description, topics, Issues, Discussions, secret scanning with push protection, and private vulnerability reporting are configured. Remaining manual step, which has no API:
 
-- **Description:** `Switch Claude Code between Anthropic and any 9Router provider on Windows — terminal and VSCode support.`
-- **Topics:** `claude-code`, `claude`, `anthropic`, `9router`, `llm-router`, `ai-router`, `model-router`, `openai`, `gemini`, `deepseek`, `vscode`, `powershell`, `windows`, `developer-tools`, `ai-tools`.
-- Enable **Issues** and **Discussions**.
-- Enable **Private vulnerability reporting**.
-- Upload `docs/social-preview.png` under **Settings → General → Social preview**.
-- Keep the Wiki disabled unless it will be maintained as the single documentation source.
+- upload `docs/social-preview.png` under **Settings → General → Social preview**.
+
+Keep the Wiki disabled unless it will be maintained as the single documentation source.
 
 ### Screenshot review
 
@@ -27,51 +24,17 @@ Whenever a screenshot is added or replaced, inspect it at full resolution and co
 
 Replace the image with a redacted version if any private information is visible. Automated text scans do not inspect pixels.
 
-### CI and branch protection
+### Branch protection
 
-After the first default-branch commit:
+`main` requires the `windows-powershell` status check and blocks force pushes and branch deletion. Pull-request review is not required while there is a single maintainer; enable it once a second maintainer or regular outside contributors exist.
 
-- confirm `.github/workflows/test.yml` passes on `windows-latest`;
-- enable branch protection/rulesets;
-- require the `windows-powershell` status check;
-- require pull request review before merge;
-- block force pushes and branch deletion on the default branch;
-- enable GitHub secret scanning and push protection when available.
+### Issue backlog
 
-### Initial issues
+Starter issues are open and labelled. Apply `good first issue` only where a new contributor can finish the work independently, and `help wanted` for larger tasks such as macOS/Linux launchers, VSCodium detection, packaging, signed release assets, and provider compatibility automation. Each issue should state context, expected result, likely files, test instructions, and non-goals.
 
-Create real, scoped starter issues and apply `good first issue` only where a new contributor can complete the work independently. Candidates:
+## Launch (P1)
 
-1. Add PowerShell argument-completion documentation.
-2. Add a sanitized Windows Terminal installation screenshot.
-3. Add a custom config-path example test.
-4. Add VSCode Insiders settings-path support.
-5. Add a Windows Sandbox verification guide.
-6. Improve JSON validation error tests.
-7. Add Pester coverage while retaining the no-dependency test runner.
-8. Add the first verified provider compatibility result.
-
-Use `help wanted` for larger tasks:
-
-- macOS/Linux launchers;
-- VSCodium/VSCode Insiders automatic detection;
-- Scoop or Winget packaging;
-- signed release assets;
-- provider compatibility automation.
-
-Each issue should state context, expected result, likely files, test instructions, and non-goals.
-
-## First release (P1)
-
-### Release `v0.1.0`
-
-Prepare a release only after CI is green:
-
-- tag `v0.1.0`;
-- update placeholder links in `CHANGELOG.md`;
-- include a ZIP without `config.local.json`, backups, logs, or test output;
-- publish SHA-256 checksums;
-- describe terminal switching, VSCode switching, config-driven provider support, backups, tests, limitations, and supported Windows/PowerShell versions.
+Release `v0.1.0` is published from the green CI commit. Optional additions: a ZIP that excludes `config.local.json`, backups, logs, and test output, with published SHA-256 checksums.
 
 ### Launch materials
 
