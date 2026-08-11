@@ -36,14 +36,6 @@ Release `v0.1.0` is published from the green CI commit. Optional additions: a ZI
 
 ### Launch materials
 
-Create a short, fully redacted 8–15 second GIF showing:
-
-1. direct mode status;
-2. `vscode-switch.ps1 on`;
-3. VSCode reload;
-4. a routed request visible in the sanitized 9Router console;
-5. `off` returning to the default environment.
-
 Write launch posts around the user problem and technical safeguards rather than asking for stars. Suggested angle:
 
 > Switch Claude Code between Anthropic and any model exposed by 9Router without permanently changing global settings. Includes terminal and VSCode modes, local-only secrets, backups, install/uninstall, and Windows CI.
