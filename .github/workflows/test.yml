@@ -1,0 +1,52 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-powershell:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        shell: powershell
+        run: |
+          Get-ChildItem -Recurse -Filter *.json | ForEach-Object {
+            Write-Host "Validating $($_.FullName)"
+            Get-Content $_.FullName -Raw | ConvertFrom-Json | Out-Null
+          }
+
+      - name: Parse PowerShell scripts
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem -Recurse -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $_.FullName,
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $failed = $true
+              $errors | ForEach-Object { Write-Error $_.Message }
+            }
+          }
+          if ($failed) { exit 1 }
+
+      - name: Scan for secrets and private identifiers
+        shell: powershell
+        run: .\tests\scan-secrets.ps1
+
+      - name: Run isolated behavior tests
+        shell: powershell
+        run: .\tests\run-tests.ps1

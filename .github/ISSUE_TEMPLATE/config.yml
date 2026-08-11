@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions
+    url: https://github.com/vinhnguyenthanhdn/claude-router/discussions
+    about: Ask setup and usage questions in GitHub Discussions.
+  - name: 9Router support
+    url: https://github.com/decolua/9router
+    about: Report router, provider, OAuth, and protocol translation issues upstream.
+  - name: Security reports
+    url: https://github.com/vinhnguyenthanhdn/claude-router/security/advisories/new
+    about: Report vulnerabilities privately through GitHub security advisories.

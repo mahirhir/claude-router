@@ -1,0 +1,16 @@
+# Local secrets and generated state
+config.local.json
+*.bak
+*.backup
+*.log
+*.tmp
+
+# Test output
+.tests-temp/
+TestResults/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

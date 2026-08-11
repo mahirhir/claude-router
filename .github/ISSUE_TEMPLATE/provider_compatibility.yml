@@ -1,0 +1,79 @@
+name: Provider compatibility result
+description: Report a tested provider/model result for the compatibility matrix
+title: "[Provider]: "
+labels: ["provider-compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report only behavior you tested. Presence in the 9Router dashboard is not proof of Claude Code compatibility. Redact credentials, account IDs, and private prompts.
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      options:
+        - label: I tested the exact model ID through Claude Code and 9Router.
+          required: true
+        - label: All evidence is sanitized and contains no credentials or private data.
+          required: true
+  - type: input
+    attributes:
+      label: 9Router version
+      placeholder: v0.5.50
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Provider
+      placeholder: OpenAI Codex, Gemini, DeepSeek, custom endpoint, etc.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Exact model ID
+      placeholder: provider/model-id
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Authentication type
+      options: [OAuth, API key, Custom endpoint, Local, Other]
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Basic streaming
+      options: [Yes, No, Partial]
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Tool use
+      options: [Yes, No, Partial, Not tested]
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Vision
+      options: [Yes, No, Partial, Not tested, Not applicable]
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Thinking/reasoning
+      options: [Yes, No, Partial, Not tested, Not applicable]
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Prompt caching
+      options: [Yes, No, Partial, Not tested, Unknown]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Test procedure and sanitized evidence
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Known limitations

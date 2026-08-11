@@ -1,0 +1,6 @@
+{
+  "baseUrl": "http://127.0.0.1:20128",
+  "authToken": "replace-with-your-9router-api-key",
+  "mainModel": "provider/model-id",
+  "smallFastModel": "provider/smaller-model-id"
+}

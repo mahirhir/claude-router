@@ -1,0 +1,155 @@
+# Claude Router Switcher for Windows
+
+Use GPT, Gemini, DeepSeek, Grok, Anthropic, local models, or any other model exposed by 9Router inside Claude Code—without permanently changing your Claude configuration.
+
+A small, config-driven toolkit for switching Claude Code between its default Anthropic connection and a local [9Router](https://github.com/decolua/9router)-compatible endpoint.
+
+![Platform](https://img.shields.io/badge/platform-Windows-0078D4)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+It supports:
+
+- per-process routing in Windows Terminal, PowerShell, and Command Prompt;
+- the native Claude Code panel/sidebar in VSCode;
+- any provider and model that 9Router exposes through its Anthropic-compatible `/v1/messages` endpoint;
+- non-destructive switching that preserves unrelated VSCode settings;
+- local-only secrets through a gitignored configuration file.
+
+> Routing the Claude Code client does not guarantee that the underlying model is Claude. The selected 9Router model may be GPT, Gemini, DeepSeek, Grok, a local model, or another provider. The Claude Code UI remains the client shell.
+
+## Demo
+
+<p align="center">
+  <img src="docs/claude-code-9router-demo.png" alt="Claude Code running through a 9Router provider" width="424">
+</p>
+
+<p align="center"><em>Claude Code keeps its familiar interface while requests are routed to the provider and model selected in 9Router.</em></p>
+
+### OpenCode Free with DeepSeek
+
+<p align="center">
+  <img src="docs/deepseek-demo.png" alt="Claude Code using the OpenCode Free DeepSeek model through 9Router" width="850">
+</p>
+
+<p align="center"><em>A Claude Code terminal session routed to <code>oc/deepseek-v4-flash-free</code> through the OpenCode Free provider.</em></p>
+
+## Prerequisites
+
+- Windows 10/11 and Windows PowerShell 5.1 or later
+- Claude Code CLI and/or the Claude Code VSCode extension
+- a running 9Router installation
+- at least one configured 9Router provider and a 9Router API key
+
+See [Complete setup](docs/SETUP.md) for 9Router installation, provider setup, API key creation, model selection, toolkit configuration, recovery, and troubleshooting.
+
+## Quick start
+
+```powershell
+git clone https://github.com/vinhnguyenthanhdn/claude-router.git
+cd claude-router
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+notepad "$env:USERPROFILE\.claude\9router\config.local.json"
+```
+
+Configure the generated file:
+
+```json
+{
+  "baseUrl": "http://127.0.0.1:20128",
+  "authToken": "your-9router-api-key",
+  "mainModel": "provider/model-id",
+  "smallFastModel": "provider/smaller-model-id"
+}
+```
+
+Open a new terminal after installation.
+
+### Terminal
+
+```powershell
+claude                         # Direct/default Anthropic connection
+claude-9router                 # Routed through 9Router
+claude-9router -p "Hello"      # Normal Claude CLI arguments work
+claude-9router --resume
+```
+
+Only the routed child process receives the proxy variables. Global Claude Code settings remain untouched.
+
+### VSCode extension
+
+```powershell
+# Enable routing for the native Claude Code panel/sidebar
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" on
+
+# Show the current mode (token is never printed)
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" status
+
+# Return to the default/direct Anthropic environment
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" off
+```
+
+Run **Developer: Reload Window** or restart VSCode after `on` or `off`. The setting has machine scope, so it affects every VSCode workspace on that machine.
+
+## Provider support
+
+The toolkit does not hard-code a provider. Set `mainModel` and `smallFastModel` to model IDs shown by your 9Router instance.
+
+9Router v0.5.50 exposes these provider categories and integrations; availability depends on your version, region, account, and credentials:
+
+- **Custom compatible endpoints:** Anthropic-compatible and OpenAI-compatible providers
+- **OAuth providers:** Claude Code, Antigravity, OpenAI Codex, Qoder, GitHub Copilot, Cursor IDE, Kilo Code, Cline, ClinePass, CodeBuddy, CodeBuddy CN, Kimi, Grok CLI/Grok Build, and xAI/Grok
+- **Free/cloud providers:** OpenCode Free, Gemini CLI, Kiro AI, OpenRouter, NVIDIA NIM, Ollama Cloud, Vertex AI, Gemini, Cloudflare, Poolside, BytePlus ModelArk, Kimchi, API.airforce, Bazaarlink, and Kilo Gateway
+- **API-key providers shown in the dashboard:** Alibaba, Alibaba Coding, Alibaba Studio, Anthropic, Azure OpenAI, Baidu Qianfan, Blackbox AI, Cerebras, Chutes AI, Cohere, Command Code, DeepSeek, Featherless, Fireworks AI, GLM, GLM Coding, Groq, Hyperbolic, LLM7, Minimax, and additional providers under the dashboard's expanded list
+
+This is a snapshot of the dashboard, not a compatibility guarantee. Test the exact model in 9Router before using it with Claude Code. Tool use, streaming, vision, prompt caching, and extended thinking can vary by provider.
+
+See the community-maintained [provider compatibility matrix](docs/PROVIDERS.md), or submit a sanitized result through the provider compatibility issue form.
+
+## Configuration
+
+| Property | Required | Description |
+|---|---:|---|
+| `baseUrl` | Yes | Router origin without `/v1/messages`, normally `http://127.0.0.1:20128` |
+| `authToken` | Yes | API key created under 9Router **Endpoint & Key** |
+| `mainModel` | Yes | Any model ID exposed by an active provider through 9Router |
+| `smallFastModel` | No | Model used by Claude Code for smaller background requests |
+
+Set `CLAUDE_ROUTER_CONFIG` to use a config file outside the install directory.
+
+## Security and provider terms
+
+- Never commit `config.local.json`; it contains an API key.
+- Treat OAuth sessions, subscription credentials, and API keys as secrets.
+- Some providers do not license subscription or OAuth sessions for proxy/router use. Accounts may be restricted or banned. Use only accounts and endpoints you are authorized to route, and follow each provider's terms.
+- The toolkit sends Claude Code conversation context and tool requests to the selected provider through 9Router. Do not route sensitive data to a provider that is not approved for it.
+
+## Testing
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
+```
+
+Tests use temporary files and do not modify the real VSCode or Claude settings.
+
+## Uninstall
+
+```powershell
+& "$env:USERPROFILE\.claude\9router\uninstall.ps1"
+```
+
+The uninstaller disables VSCode routing first, removes the PATH entry and managed scripts, then removes the local config unless `-KeepConfig` is supplied.
+
+## Contributing and support
+
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+- Use the issue forms for bugs, features, and provider compatibility results.
+- Read [SUPPORT.md](SUPPORT.md) to choose the correct support channel.
+- Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+- Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+- User-visible changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+- Remaining release, GitHub configuration, and growth work is tracked in the [launch roadmap](docs/ROADMAP.md).
+
+## License
+
+[MIT](LICENSE)

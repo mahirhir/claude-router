@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a reproducible problem in this toolkit
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include API keys, OAuth data, account IDs, private code, or internal URLs. Security issues belong in private vulnerability reporting.
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues.
+          required: true
+        - label: I removed credentials and private data from this report.
+          required: true
+        - label: I confirmed the issue is in this toolkit rather than 9Router or the upstream provider.
+          required: true
+  - type: input
+    attributes:
+      label: Toolkit version or commit
+      placeholder: v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Environment
+      description: Windows, PowerShell, Claude Code, and 9Router versions
+      placeholder: Windows 11; PowerShell 5.1; Claude Code x.y.z; 9Router x.y.z
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Affected mode
+      options:
+        - Terminal launcher
+        - VSCode switcher
+        - Installer
+        - Uninstaller
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction steps
+      placeholder: Use placeholder credentials and include the smallest reproducible sequence.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual behavior and sanitized output
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional context
