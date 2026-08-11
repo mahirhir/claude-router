@@ -5,6 +5,12 @@ $excludedDirectories = @('.git', '.tests-temp', 'TestResults')
 $binaryExtensions = @('.png', '.jpg', '.jpeg', '.gif', '.ico', '.zip', '.exe', '.dll')
 $findings = New-Object System.Collections.Generic.List[string]
 
+# Contact addresses that are intentionally published in the community health files.
+$allowedContactEmails = @(
+    ('vinh.nguyenthanhdn' + '@' + 'gmail.com'),
+    ('noreply' + '@' + 'anthropic.com')
+)
+
 $patterns = @(
     @{ Name = 'Likely API key'; Regex = '(?i)\bsk-[a-z0-9_-]{16,}\b' },
     @{ Name = 'Private key'; Regex = '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' },
@@ -27,6 +33,9 @@ foreach ($file in $files) {
         continue
     }
     $content = [IO.File]::ReadAllText($file.FullName)
+    foreach ($allowed in $allowedContactEmails) {
+        $content = $content -replace [regex]::Escape($allowed), 'allowed-contact'
+    }
     foreach ($pattern in $patterns | Where-Object { $_.Name -ne 'Committed local config' }) {
         if ([regex]::IsMatch($content, $pattern.Regex)) {
             $findings.Add("$($pattern.Name): $relative")
