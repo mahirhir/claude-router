@@ -149,7 +149,6 @@ The uninstaller disables VSCode routing first, removes the PATH entry and manage
 - Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
 - Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 - User-visible changes are recorded in [CHANGELOG.md](CHANGELOG.md).
-- Remaining release, GitHub configuration, and growth work is tracked in the [launch roadmap](docs/ROADMAP.md).
 
 ## License
 

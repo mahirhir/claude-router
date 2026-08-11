@@ -5,6 +5,9 @@ config.local.json
 *.log
 *.tmp
 
+# Maintainer-only notes
+docs/ROADMAP.md
+
 # Test output
 .tests-temp/
 TestResults/
