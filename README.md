@@ -141,6 +141,15 @@ Tests use temporary files and do not modify the real VSCode or Claude settings.
 
 The uninstaller disables VSCode routing first, removes the PATH entry and managed scripts, then removes the local config unless `-KeepConfig` is supplied.
 
+## Related tools
+
+Two separate concerns around the same CLI; either works on its own.
+
+| Tool | What it does |
+|---|---|
+| `claude-router` (this repo) | Points Claude Code at a 9Router provider instead of Anthropic, per process in the terminal or per machine in VSCode |
+| [`claude-jobs`](https://github.com/vinhnguyenthanhdn/claude-jobs) | Runs Claude Code on a schedule, unattended, and reports the outcome (launchd, systemd or cron) |
+
 ## Contributing and support
 
 - Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
