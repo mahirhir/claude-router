@@ -9,13 +9,18 @@ A small, config-driven toolkit for switching Claude Code between its default Ant
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-It supports:
+## What it does
 
-- per-process routing in Windows Terminal, PowerShell, and Command Prompt;
-- the native Claude Code panel/sidebar in VSCode;
-- any provider and model that 9Router exposes through its Anthropic-compatible `/v1/messages` endpoint;
-- non-destructive switching that preserves unrelated VSCode settings;
-- local-only secrets through a gitignored configuration file.
+| Capability | Command | Effect |
+|---|---|---|
+| Route the Claude Code CLI through 9Router | `claude-9router` | Only that child process is routed; `claude` in the same window still uses the default Anthropic connection |
+| Check which endpoint and model would be used, without starting Claude | `claude-9router -DryRun` | Prints the base URL and model, then exits |
+| Route the native Claude Code panel/sidebar in VSCode | `vscode-switch.ps1 on` | Writes `claudeCode.environmentVariables` in user settings (machine scope), keeps unrelated entries, and backs the file up first |
+| Show the current VSCode mode | `vscode-switch.ps1 status` | Prints the base URL and model; the token is reported as configured and never printed |
+| Return VSCode to the default Anthropic connection | `vscode-switch.ps1 off` | Removes only the variables this toolkit manages |
+| Remove the toolkit | `uninstall.ps1` | Disables VSCode routing first, then removes the PATH entry, the managed scripts, and the local config unless `-KeepConfig` is supplied |
+
+Any provider and model that 9Router exposes through its Anthropic-compatible `/v1/messages` endpoint works; secrets stay in a gitignored local config file.
 
 > Routing the Claude Code client does not guarantee that the underlying model is Claude. The selected 9Router model may be GPT, Gemini, DeepSeek, Grok, a local model, or another provider. The Claude Code UI remains the client shell.
 
@@ -46,14 +51,19 @@ See [Complete setup](docs/SETUP.md) for 9Router installation, provider setup, AP
 
 ## Quick start
 
+Installation is a single command after cloning:
+
 ```powershell
 git clone https://github.com/vinhnguyenthanhdn/claude-router.git
 cd claude-router
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
-notepad "$env:USERPROFILE\.claude\9router\config.local.json"
 ```
 
-Configure the generated file:
+The installer copies the managed scripts to `%USERPROFILE%\.claude\9router`, adds that directory to the user PATH, and creates `config.local.json` from the example. Edit it before first use:
+
+```powershell
+notepad "$env:USERPROFILE\.claude\9router\config.local.json"
+```
 
 ```json
 {
@@ -73,6 +83,7 @@ claude                         # Direct/default Anthropic connection
 claude-9router                 # Routed through 9Router
 claude-9router -p "Hello"      # Normal Claude CLI arguments work
 claude-9router --resume
+claude-9router -DryRun         # Print the endpoint and model, do not start Claude
 ```
 
 Only the routed child process receives the proxy variables. Global Claude Code settings remain untouched.
