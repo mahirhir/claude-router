@@ -13,7 +13,7 @@ Security vulnerabilities and leaked credentials must not be reported in a public
 
 ## Development setup
 
-Requirements:
+To run the suite on your own machine you need:
 
 - Windows 10/11
 - Windows PowerShell 5.1 or later
@@ -26,6 +26,14 @@ powershell -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 ```
 
 The tests use temporary directories and must never mutate real Claude Code or VSCode settings.
+
+### Contributing without a Windows machine
+
+You do not need Windows to send a pull request here. Every pull request, including one from a fork, runs [`.github/workflows/test.yml`](.github/workflows/test.yml) on `windows-latest`: JSON validation, a PowerShell parse of every `.ps1`, the secret scan, and the full `tests/run-tests.ps1` suite. That is the same suite you would run locally, on a real Windows PowerShell host.
+
+So the loop for a macOS or Linux contributor is: push the branch, open the pull request, and read the run under the Checks tab — `Test / windows-powershell` — where a failure names the failing assertion and the line. A first pull request waits for a maintainer to approve the workflow run before it starts; that is GitHub's rule for first-time contributors, not a problem with your branch.
+
+What this does not cover, and what a reviewer will exercise on Windows for you: anything that has to touch a real Claude Code or VSCode install — the settings writes, the backup and restore path, and the behaviour of the VSCode panel itself. Say in the pull request that you could not run it on Windows, and the review will cover that part rather than assume it.
 
 ## Design rules
 
@@ -42,7 +50,7 @@ The tests use temporary directories and must never mutate real Claude Code or VS
 
 1. Create a branch from the default branch.
 2. Add or update tests for behavioral changes.
-3. Run `tests/run-tests.ps1` locally.
+3. Run `tests/run-tests.ps1` locally, or let the pull request's `windows-latest` run do it and say in the description that you have no Windows machine.
 4. Check that no local config, backup, token, account data, or absolute user path is included.
 5. Update README/setup/provider documentation when behavior changes.
 6. Open a pull request using the provided template.
