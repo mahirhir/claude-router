@@ -90,6 +90,10 @@ Only the routed child process receives the proxy variables. Global Claude Code s
 
 ### VSCode extension
 
+The panel needs its own switch because it does not inherit your terminal. Exporting `ANTHROPIC_BASE_URL` in a shell — or letting `claude-9router` export it for a session — only reaches processes that shell starts, and the extension starts its own Claude process from VSCode. So a terminal session can be routed while the panel next to it is still talking to Anthropic directly, with nothing in either place saying so.
+
+What the extension does read is its own setting, `claudeCode.environmentVariables`: an array of `{ name, value }` pairs applied when it launches Claude. That setting is where `vscode-switch.ps1` writes, and it is why the two modes are separate commands rather than one.
+
 ```powershell
 # Enable routing for the native Claude Code panel/sidebar
 & "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" on
