@@ -76,6 +76,17 @@ Provider support is model-specific and version-specific. To add a result to [doc
 - include only sanitized evidence;
 - do not imply that presence in the 9Router dashboard guarantees compatibility.
 
+## Ways to contribute that aren't code
+
+The scripts here drive a Claude Code installation on someone else's machine, and no test suite can see that machine. Reports from one are contributions:
+
+- **Say what happened on your platform and version.** Which VSCode build, which `anthropic.claude-code` version, and what the panel actually did after the switch. The macOS and Linux issues are open because nobody has posted that yet, not because the code is hard.
+- **Add or correct a row in [docs/PROVIDERS.md](docs/PROVIDERS.md).** A tested `No` is as useful as a tested `Yes`; both replace a guess.
+- **Reproduce an open issue, or report that you could not.** State the version you tried — "not reproducible on <version>" narrows an issue that has been sitting still.
+- **Review an open pull request.** The suite runs on `windows-latest` for every pull request, including from forks, so anything CI cannot reach — the real Claude Code install, the real VSCode panel — is carried by whoever reviews.
+
+Credit follows the contribution, not the file: release notes and the compatibility tables name the person who tested or reported, the same as the person who patched.
+
 ## Documentation style
 
 - Use concise, objective English.
