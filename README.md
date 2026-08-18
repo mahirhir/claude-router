@@ -59,7 +59,7 @@ cd claude-router
 powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 ```
 
-The installer copies the managed scripts to `%USERPROFILE%\.claude\9router`, adds that directory to the user PATH, and creates `config.local.json` from the example. Edit it before first use:
+The installer copies the managed scripts to `%USERPROFILE%\.claude\9router`, adds that directory to the user PATH, and creates `config.local.json` from the example. You run the copies, not the repository, so **re-run the installer after every `git pull`** — it overwrites the managed scripts and preserves your local config ([Upgrade](docs/SETUP.md#8-upgrade)). Edit the config before first use:
 
 ```powershell
 notepad "$env:USERPROFILE\.claude\9router\config.local.json"

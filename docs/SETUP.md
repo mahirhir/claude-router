@@ -167,7 +167,27 @@ claude-9router
 
 This supports separate work/personal routers without committing either key.
 
-## 8. Recovery and uninstall
+## 8. Upgrade
+
+`install.ps1` copies the scripts into `%USERPROFILE%\.claude\9router` and you run them from there, so pulling a new revision of this repository changes nothing until you install again:
+
+```powershell
+git pull
+powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
+```
+
+Re-running it is the upgrade, and it is safe to repeat. It overwrites `Common.ps1`, `claude-9router.ps1`, `claude-9router.cmd`, `vscode-switch.ps1` and `uninstall.ps1` with the versions you just pulled, leaves `config.local.json` exactly as it is (it prints `Preserved existing …`), and adds the install directory to your user `PATH` only if it is not already there.
+
+What it does **not** do is merge new keys into your `config.local.json`. That file is copied from `config.example.json` once, on first install, and never touched again — so if a later version adds a setting, yours will not have it. A missing *required* value (`baseUrl`, `authToken`, `mainModel`) fails loudly on the next launch with `Missing required config value: <name>`; an optional one falls back silently. After an upgrade that mentions a new setting, compare the two files:
+
+```powershell
+Compare-Object (Get-Content .\config.example.json) `
+               (Get-Content "$env:USERPROFILE\.claude\9router\config.local.json")
+```
+
+VSCode is separate. `vscode-switch.ps1` writes `claudeCode.environmentVariables` into your user `settings.json`, and that entry is not rewritten by an install — re-run the switcher (section 6) if an upgrade changes what belongs there.
+
+## 9. Recovery and uninstall
 
 If VSCode settings must be restored manually:
 
@@ -188,7 +208,7 @@ Keep the local key/config during uninstall:
 & "$env:USERPROFILE\.claude\9router\uninstall.ps1" -KeepConfig
 ```
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 ### `claude-9router` is not recognized
 
@@ -214,7 +234,7 @@ Reload the VSCode window after switching. Existing Claude sessions may continue 
 
 Test another model/provider. Translation between Anthropic messages and another provider's protocol is performed by 9Router, and not every model supports every Claude Code feature equally.
 
-## 10. Security and terms
+## 11. Security and terms
 
 Conversation context, code, tool definitions, and tool results may be sent to the provider selected in 9Router. Route only data that the provider is authorized to receive.
 
