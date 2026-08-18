@@ -133,6 +133,25 @@ See the community-maintained [provider compatibility matrix](docs/PROVIDERS.md),
 
 Set `CLAUDE_ROUTER_CONFIG` to use a config file outside the install directory.
 
+## What routing costs you, and what else can do it
+
+Pointing Claude Code at a non-Anthropic host is a supported thing to do, and it is not free. Two documented consequences, checked against the Claude Code docs on 2026-08-18:
+
+- **MCP tool search is disabled by default** when `ANTHROPIC_BASE_URL` points at a non-first-party host. Set `ENABLE_TOOL_SEARCH=true` only if your proxy forwards `tool_reference` blocks.
+- **Remote Control is disabled** as of Claude Code v2.1.196 when the base URL is not `api.anthropic.com`, the same as on Bedrock, Google Cloud's Agent Platform and Microsoft Foundry.
+
+Both apply however you set the base URL, including with this toolkit. See [Environment variables](https://code.claude.com/docs/en/env-vars).
+
+Three ways to do the switching, and this repo is the narrowest of them:
+
+| | What it is | Reach for it when |
+|---|---|---|
+| [`ANTHROPIC_BASE_URL`](https://code.claude.com/docs/en/env-vars) by hand, or the `env` block of `settings.json` | No tool at all: two variables, exported in a shell or written into settings | One endpoint, one model, and you rarely change either |
+| [`musistudio/claude-code-router`](https://github.com/musistudio/claude-code-router) | A cross-platform Node control plane that routes requests across models and providers, with rules for which request goes where | You want per-request routing, many providers, and support beyond Windows |
+| `claude-router` (this repo) | Windows PowerShell scripts around one 9Router endpoint: a launcher that routes a single process, and a VSCode switch that is reversible | You are on Windows, you already run 9Router, and you want the VSCode panel switched without hand-editing settings |
+
+The narrow part is the point: the launcher routes only the process it starts, so `claude` in the same window is untouched; the VSCode switch backs up your settings first and removes only the variables it wrote; and `uninstall.ps1` puts the machine back. What it does not do is choose a model per request — that is what a control plane is for.
+
 ## Security and provider terms
 
 - Never commit `config.local.json`; it contains an API key.

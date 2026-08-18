@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - README opens with a capability table (command and effect per capability) and documents `claude-9router -DryRun`, which the scripts have always supported.
+- README says what routing costs — MCP tool search off by default and Remote Control disabled once the base URL is not `api.anthropic.com` — and places this toolkit against setting `ANTHROPIC_BASE_URL` by hand and against a full routing control plane, so a reader can tell which of the three they actually want.
 
 ## [0.1.0] - 2026-08-11
 
