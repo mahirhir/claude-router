@@ -1,11 +1,11 @@
-# Claude Router Switcher for Windows
+# Claude Router Switcher — Windows toolkit, with a POSIX terminal launcher
 
 Use GPT, Gemini, DeepSeek, Grok, Anthropic, local models, or any other model exposed by 9Router inside Claude Code—without permanently changing your Claude configuration.
 
 A small, config-driven toolkit for switching Claude Code between its default Anthropic connection and a local [9Router](https://github.com/decolua/9router)-compatible endpoint.
 
 [![Test](https://github.com/vinhnguyenthanhdn/claude-router/actions/workflows/test.yml/badge.svg)](https://github.com/vinhnguyenthanhdn/claude-router/actions/workflows/test.yml)
-![Platform](https://img.shields.io/badge/platform-Windows-0078D4)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20(terminal)-0078D4)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
