@@ -27,13 +27,15 @@ powershell -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 
 The tests use temporary directories and must never mutate real Claude Code or VSCode settings.
 
-The POSIX side of the config layer has its own suite, which needs only a shell and Node:
+The POSIX side — the config layer and the terminal launcher — has its own suite, which needs only a shell and Node:
 
 ```sh
 sh tests/run-tests.sh
 ```
 
-`scripts/common.sh` is the counterpart of `scripts/Common.ps1`: it finds `config.local.json` in the same precedence order, applies the same validation, and fails with the same wording. Node parses the JSON because Claude Code already requires Node, so it is not a new dependency; `jq` and `python3` would be. A shell launcher (#9), the macOS VSCode switch (#10) and the Linux entries (#6) build on this rather than re-reading the config themselves, so the two platforms cannot drift into disagreeing about what a valid config is.
+`scripts/common.sh` is the counterpart of `scripts/Common.ps1`: it finds `config.local.json` in the same precedence order, applies the same validation, and fails with the same wording. Node parses the JSON because Claude Code already requires Node, so it is not a new dependency; `jq` and `python3` would be. `scripts/claude-9router` is built on it and is the worked example: it sources `common.sh` and spends none of its own code on reading or validating a config. The macOS VSCode switch (#10) and the Linux packaging (#6) should do the same rather than re-reading the config themselves, so the two platforms cannot drift into disagreeing about what a valid config is.
+
+The launcher's cases assert the **environment the child process receives**, not the text of the script, using a stub `claude` on `PATH` that reports each managed variable as its value or `<unset>`. Keep that distinction if you add cases: a blank `ANTHROPIC_SMALL_FAST_MODEL` still reads as configured to the CLI, so "removed" and "set to empty" are different outcomes and only one of them is correct.
 
 ### Contributing without a Windows machine
 
