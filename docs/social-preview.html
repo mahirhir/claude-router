@@ -1,0 +1,86 @@
+<!doctype html>
+<!--
+  Source of docs/social-preview.png, the repository social preview card (1280x640).
+
+  Render it by loading this file in any browser at a 1280x640 viewport and taking a
+  full-viewport screenshot; no build step and no dependency. Keep the platform line
+  in sync with the README title, the repository description and the Platform badge —
+  the card is what a link to this repo looks like on Threads, X and LinkedIn, so a
+  stale line there contradicts the post that carries the link.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      :root {
+        --bg: #0a1324;
+        --panel: #24344a;
+        --box: #192232;
+        --orange: #ff8c42;
+        --cyan: #4bcddb;
+        --ink: #f5f7fa;
+        --muted: #b4c2d2;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1280px; height: 640px; }
+      body {
+        background: radial-gradient(120% 120% at 50% 0%, #132840 0%, var(--bg) 60%);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: var(--ink);
+      }
+      .panel {
+        position: absolute;
+        left: 68px; top: 70px; right: 68px; bottom: 70px;
+        background: var(--panel);
+        border-left: 9px solid var(--orange);
+        padding: 46px 0 0 66px;
+      }
+      h1 { font-size: 66px; font-weight: 700; letter-spacing: -1px; }
+      .sub { margin-top: 10px; font-size: 29px; color: #dbe4ee; font-weight: 300; }
+      .flow { display: flex; align-items: center; margin-top: 46px; }
+      .node {
+        background: var(--box);
+        border: 2px solid var(--cyan);
+        border-radius: 4px;
+        width: 252px; height: 106px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 27px; font-weight: 500;
+      }
+      .node.mid { border-color: var(--orange); }
+      .arrow { width: 132px; display: flex; align-items: center; justify-content: center; }
+      .arrow svg { display: block; }
+      .foot { position: absolute; left: 66px; bottom: 62px; }
+      .foot .line { font-size: 23px; color: var(--muted); font-weight: 300; }
+      .foot .tag { margin-top: 14px; font-size: 23px; color: var(--cyan); font-weight: 300; }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <h1>Claude Router Switcher</h1>
+      <div class="sub">Use any 9Router model inside Claude Code — and switch back safely.</div>
+
+      <div class="flow">
+        <div class="node">Claude Code</div>
+        <div class="arrow">
+          <svg width="100" height="16" viewBox="0 0 100 16" fill="none">
+            <path d="M0 8h84" stroke="#8fa3bb" stroke-width="4" />
+            <path d="M84 2l12 6-12 6z" fill="#8fa3bb" />
+          </svg>
+        </div>
+        <div class="node mid">9Router</div>
+        <div class="arrow">
+          <svg width="100" height="16" viewBox="0 0 100 16" fill="none">
+            <path d="M0 8h84" stroke="#8fa3bb" stroke-width="4" />
+            <path d="M84 2l12 6-12 6z" fill="#8fa3bb" />
+          </svg>
+        </div>
+        <div class="node">Any Provider</div>
+      </div>
+
+      <div class="foot">
+        <div class="line">Terminal: Windows &bull; macOS &bull; Linux &nbsp;—&nbsp; VSCode panel: Windows</div>
+        <div class="tag">Community project</div>
+      </div>
+    </div>
+  </body>
+</html>
