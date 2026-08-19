@@ -578,5 +578,21 @@ out=$(vsc --help)
 check_contains '--help lists the three modes' "$out" 'Usage: vscode-switch [on|off|status]'
 check_eq '--help exits 0' "$(field "$out" '$')" 'STATUS=0'
 
+# --- the entry scripts are executable where it counts ----------------------
+#
+# The mode git records, not the mode on this disk. A clone with
+# core.fileMode=false ignores a local `chmod +x`, so a script can run for the
+# author and land in the repository unexecutable — every case above then fails
+# in CI with "Permission denied" and none of them fail here.
+
+if (cd "$root" && git rev-parse --git-dir >/dev/null 2>&1); then
+    for entry in scripts/claude-9router scripts/vscode-switch tests/run-tests.sh; do
+        mode=$(cd "$root" && git ls-files -s "$entry" | cut -d' ' -f1)
+        check_eq "$entry is committed executable" "$mode" '100755'
+    done
+else
+    ok 'entry script modes skipped (not a git checkout)'
+fi
+
 printf '\n%s passed, %s failed\n' "$passed" "$failed"
 [ "$failed" -eq 0 ]
