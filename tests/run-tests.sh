@@ -497,6 +497,32 @@ check_eq 'off keeps the entry it does not own' \
     "$(settings_query "$on_file" 's["claudeCode.environmentVariables"].map(e => e.name)')" \
     '["MY_OWN_VAR"]'
 
+# The round trip, stated as the user would state it: after on and then off, the
+# file says what it said before. Compared as parsed JSON because the switch
+# rewrites the file and key order is not something it promises to keep.
+round="$temp/roundtrip-settings.json"
+cat > "$round" <<'JSON'
+{
+  "editor.fontSize": 13,
+  "claudeCode.environmentVariables": [{ "name": "MY_OWN_VAR", "value": "keep-me" }],
+  "workbench.colorTheme": "Default Dark+"
+}
+JSON
+cp "$round" "$temp/roundtrip-before.json"
+vsc on --config "$switch_config" --settings "$round" >/dev/null
+vsc off --settings "$round" >/dev/null
+same=$(ROUTER_Q_A="$temp/roundtrip-before.json" ROUTER_Q_B="$round" node -e '
+const fs = require("fs");
+const load = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
+// Sorted keys on both sides, so only content differences show.
+const norm = (v) => JSON.stringify(v, (k, x) =>
+    x && typeof x === "object" && !Array.isArray(x)
+        ? Object.fromEntries(Object.keys(x).sort().map((n) => [n, x[n]]))
+        : x);
+console.log(norm(load(process.env.ROUTER_Q_A)) === norm(load(process.env.ROUTER_Q_B)));
+')
+check_eq 'on then off leaves the file saying what it said before' "$same" 'true'
+
 # An empty array is a different thing to read than no setting at all, and the
 # file is one a person opens: off has to leave it looking like never-switched-on.
 only_managed="$temp/only-managed.json"
