@@ -1,0 +1,208 @@
+#!/usr/bin/env sh
+# POSIX counterpart of vscode-switch.ps1: point the native Claude Code panel in
+# VSCode at a 9Router endpoint, or send it back to its default environment.
+#
+# The panel does not inherit the environment of the terminal it was launched
+# from, which is why routing it needs a settings file edit at all and cannot be
+# done by the launcher. The setting is an array, and other extensions and the
+# user put entries in it too, so this script owns exactly the names listed in
+# ROUTER_MANAGED_ENV_NAMES and leaves everything else — every other entry and
+# every other setting in the file — byte-for-byte where it was.
+#
+# The default settings path is the macOS one. Linux has its own location and is
+# tracked separately (#6); until then a Linux user passes --settings.
+set -eu
+
+script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd -P)
+ROUTER_SCRIPT_DIR="$script_dir"
+export ROUTER_SCRIPT_DIR
+# shellcheck source=common.sh
+. "$script_dir/common.sh"
+
+settings_key='claudeCode.environmentVariables'
+mode=''
+config_path=''
+settings_path=''
+
+usage() {
+    cat <<'USAGE'
+Usage: vscode-switch [on|off|status] [--config PATH] [--settings PATH]
+
+  on       route the VSCode Claude Code panel through the configured endpoint
+  off      return the panel to its default/direct environment
+  status   report which of the two is in effect (default)
+
+  --config PATH    router config to read; same precedence as the launcher
+  --settings PATH  VSCode settings.json to edit
+                   (default: ~/Library/Application Support/Code/User/settings.json)
+USAGE
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        on|off|status)
+            [ -z "$mode" ] || { echo "Only one mode may be given; got '$mode' and '$1'." >&2; exit 2; }
+            mode="$1"
+            shift
+            ;;
+        --config)
+            [ $# -ge 2 ] || { echo "--config needs a path." >&2; exit 2; }
+            config_path="$2"
+            shift 2
+            ;;
+        --config=*)
+            config_path="${1#--config=}"
+            shift
+            ;;
+        --settings)
+            [ $# -ge 2 ] || { echo "--settings needs a path." >&2; exit 2; }
+            settings_path="$2"
+            shift 2
+            ;;
+        --settings=*)
+            settings_path="${1#--settings=}"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+[ -n "$mode" ] || mode='status'
+[ -n "$settings_path" ] || settings_path="$HOME/Library/Application Support/Code/User/settings.json"
+
+if [ ! -f "$settings_path" ]; then
+    echo "VSCode settings.json not found: $settings_path" >&2
+    exit 1
+fi
+
+# Reading and writing the settings file both go through node, for the same
+# reason common.sh does: it is the one JSON parser a Claude Code user is
+# guaranteed to have.
+if [ "$mode" = 'status' ]; then
+    ROUTER_SETTINGS_PATH="$settings_path" ROUTER_SETTINGS_KEY="$settings_key" node -e '
+const fs = require("fs");
+const path = process.env.ROUTER_SETTINGS_PATH;
+let settings;
+try {
+    settings = JSON.parse(fs.readFileSync(path, "utf8"));
+} catch (err) {
+    console.error(`Invalid JSON in VSCode settings ${JSON.stringify(path)}: ${err.message}`);
+    process.exit(1);
+}
+const entries = Array.isArray(settings?.[process.env.ROUTER_SETTINGS_KEY])
+    ? settings[process.env.ROUTER_SETTINGS_KEY]
+    : [];
+const find = (name) => entries.find((e) => e && e.name === name);
+const base = find("ANTHROPIC_BASE_URL");
+if (!base) {
+    console.log("VSCode Claude Code -> direct Anthropic/default environment");
+    process.exit(0);
+}
+const model = find("ANTHROPIC_MODEL");
+console.log("VSCode Claude Code -> router enabled");
+console.log(`  Base URL: ${base.value}`);
+if (model) console.log(`  Model: ${model.value}`);
+// The token is reported as present and never printed, on either platform.
+console.log("  Authentication token: configured (hidden)");
+' || exit 1
+    exit 0
+fi
+
+if [ "$mode" = 'on' ]; then
+    router_load_config "$config_path" || exit 1
+fi
+
+# Parse before copying. A file the toolkit cannot read is refused without
+# leaving a `.bak-claude-router` next to it, so the presence of that file always
+# means a write was attempted rather than merely considered.
+ROUTER_SETTINGS_PATH="$settings_path" node -e '
+const fs = require("fs");
+const path = process.env.ROUTER_SETTINGS_PATH;
+let settings;
+try {
+    settings = JSON.parse(fs.readFileSync(path, "utf8"));
+} catch (err) {
+    console.error(`Invalid JSON in VSCode settings ${JSON.stringify(path)}: ${err.message}`);
+    process.exit(1);
+}
+if (settings === null || typeof settings !== "object" || Array.isArray(settings)) {
+    console.error(`Invalid JSON in VSCode settings ${JSON.stringify(path)}: expected an object.`);
+    process.exit(1);
+}
+' || exit 1
+
+backup_path="$settings_path.bak-claude-router"
+cp -- "$settings_path" "$backup_path"
+
+# The write goes to a temporary file next to the target and is moved into place,
+# so an interrupted run cannot leave a half-written settings.json behind. If
+# anything still fails, the backup taken above is copied back.
+if ! ROUTER_SETTINGS_PATH="$settings_path" ROUTER_SETTINGS_KEY="$settings_key" \
+     ROUTER_MODE="$mode" ROUTER_MANAGED_ENV_NAMES="$ROUTER_MANAGED_ENV_NAMES" \
+     ROUTER_BASE_URL="${ROUTER_BASE_URL:-}" ROUTER_AUTH_TOKEN="${ROUTER_AUTH_TOKEN:-}" \
+     ROUTER_MAIN_MODEL="${ROUTER_MAIN_MODEL:-}" ROUTER_SMALL_FAST_MODEL="${ROUTER_SMALL_FAST_MODEL:-}" \
+     node -e '
+const fs = require("fs");
+const path = process.env.ROUTER_SETTINGS_PATH;
+const key = process.env.ROUTER_SETTINGS_KEY;
+const managed = new Set(process.env.ROUTER_MANAGED_ENV_NAMES.split("\n").filter(Boolean));
+
+let settings;
+try {
+    settings = JSON.parse(fs.readFileSync(path, "utf8"));
+} catch (err) {
+    console.error(`Invalid JSON in VSCode settings ${JSON.stringify(path)}: ${err.message}`);
+    process.exit(1);
+}
+if (settings === null || typeof settings !== "object" || Array.isArray(settings)) {
+    console.error(`Invalid JSON in VSCode settings ${JSON.stringify(path)}: expected an object.`);
+    process.exit(1);
+}
+
+const current = Array.isArray(settings[key]) ? settings[key] : [];
+const preserved = current.filter((e) => !(e && managed.has(e.name)));
+
+let next = preserved;
+if (process.env.ROUTER_MODE === "on") {
+    next = preserved.concat([
+        { name: "ANTHROPIC_BASE_URL", value: process.env.ROUTER_BASE_URL },
+        { name: "ANTHROPIC_AUTH_TOKEN", value: process.env.ROUTER_AUTH_TOKEN },
+        { name: "ANTHROPIC_MODEL", value: process.env.ROUTER_MAIN_MODEL },
+        { name: "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", value: "1" },
+    ]);
+    if ((process.env.ROUTER_SMALL_FAST_MODEL || "").trim() !== "") {
+        next.push({ name: "ANTHROPIC_SMALL_FAST_MODEL", value: process.env.ROUTER_SMALL_FAST_MODEL });
+    }
+}
+
+// An empty array is not the same as no setting: leaving `[]` behind would make
+// `off` and "never switched on" look different in a file the user reads.
+delete settings[key];
+if (next.length > 0) settings[key] = next;
+
+const tmp = `${path}.tmp-claude-router`;
+fs.writeFileSync(tmp, JSON.stringify(settings, null, 2) + "\n", "utf8");
+fs.renameSync(tmp, path);
+'
+then
+    cp -- "$backup_path" "$settings_path"
+    echo "Could not update VSCode settings; restored backup." >&2
+    exit 1
+fi
+
+if [ "$mode" = 'on' ]; then
+    echo 'ON  - VSCode Claude Code now routes through the configured endpoint.'
+    echo "      Model: $ROUTER_MAIN_MODEL"
+else
+    echo 'OFF - VSCode Claude Code returned to its default/direct environment.'
+fi
+echo "      Backup: $backup_path"
+echo '      Restart VSCode or run Developer: Reload Window.'

@@ -1,24 +1,26 @@
-# Claude Router Switcher — Windows toolkit, with a POSIX terminal launcher
+# Claude Router Switcher — run Claude Code through any 9Router provider, on Windows, macOS and Linux
 
 Use GPT, Gemini, DeepSeek, Grok, Anthropic, local models, or any other model exposed by 9Router inside Claude Code—without permanently changing your Claude configuration.
 
 A small, config-driven toolkit for switching Claude Code between its default Anthropic connection and a local [9Router](https://github.com/decolua/9router)-compatible endpoint.
 
 [![Test](https://github.com/vinhnguyenthanhdn/claude-router/actions/workflows/test.yml/badge.svg)](https://github.com/vinhnguyenthanhdn/claude-router/actions/workflows/test.yml)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20(terminal)-0078D4)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0078D4)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## What it does
 
-| Capability | Command | Effect |
-|---|---|---|
-| Route the Claude Code CLI through 9Router | `claude-9router` | Only that child process is routed; `claude` in the same window still uses the default Anthropic connection |
-| Check which endpoint and model would be used, without starting Claude | `claude-9router -DryRun` | Prints the base URL and model, then exits |
-| Route the native Claude Code panel/sidebar in VSCode | `vscode-switch.ps1 on` | Writes `claudeCode.environmentVariables` in user settings (machine scope), keeps unrelated entries, and backs the file up first |
-| Show the current VSCode mode | `vscode-switch.ps1 status` | Prints the base URL and model; the token is reported as configured and never printed |
-| Return VSCode to the default Anthropic connection | `vscode-switch.ps1 off` | Removes only the variables this toolkit manages |
-| Remove the toolkit | `uninstall.ps1` | Disables VSCode routing first, then removes the PATH entry, the managed scripts, and the local config unless `-KeepConfig` is supplied |
+| Capability | Windows | macOS and Linux | Effect |
+|---|---|---|---|
+| Route the Claude Code CLI through 9Router | `claude-9router` | `./scripts/claude-9router` | Only that child process is routed; `claude` in the same window still uses the default Anthropic connection |
+| Check which endpoint and model would be used, without starting Claude | `claude-9router -DryRun` | `./scripts/claude-9router --dry-run` | Prints the base URL and model, then exits |
+| Route the native Claude Code panel/sidebar in VSCode | `vscode-switch.ps1 on` | `./scripts/vscode-switch on` | Writes `claudeCode.environmentVariables` in user settings (machine scope), keeps unrelated entries, and backs the file up first |
+| Show the current VSCode mode | `vscode-switch.ps1 status` | `./scripts/vscode-switch status` | Prints the base URL and model; the token is reported as configured and never printed |
+| Return VSCode to the default Anthropic connection | `vscode-switch.ps1 off` | `./scripts/vscode-switch off` | Removes only the variables this toolkit manages |
+| Remove the toolkit | `uninstall.ps1` | — | Disables VSCode routing first, then removes the PATH entry, the managed scripts, and the local config unless `-KeepConfig` is supplied |
+
+The installer is the one part that is still Windows-only: on macOS and Linux you run the scripts out of the clone and put them on your own PATH if you want bare commands.
 
 Any provider and model that 9Router exposes through its Anthropic-compatible `/v1/messages` endpoint works; secrets stay in a gitignored local config file.
 
@@ -40,11 +42,11 @@ Any provider and model that 9Router exposes through its Anthropic-compatible `/v
 
 <p align="center"><em>A Claude Code terminal session routed to <code>oc/deepseek-v4-flash-free</code> through the OpenCode Free provider.</em></p>
 
-On macOS and Linux the terminal launcher works and nothing else does yet — see [macOS and Linux](#macos-and-linux). The installer, the PATH entry and the VSCode switch are Windows-only.
+On macOS and Linux both switches work — the terminal launcher and the VSCode panel — out of the clone; see [macOS and Linux](#macos-and-linux). The installer, and with it the PATH entry and the managed copy under your profile, is Windows-only.
 
 ## Prerequisites
 
-- Windows 10/11 and Windows PowerShell 5.1 or later, **or** macOS/Linux with any POSIX shell for the terminal launcher only
+- Windows 10/11 and Windows PowerShell 5.1 or later, **or** macOS/Linux with any POSIX shell (the installer is the only Windows-only part)
 - Claude Code CLI and/or the Claude Code VSCode extension
 - a running 9Router installation
 - at least one configured 9Router provider and a 9Router API key
@@ -92,7 +94,7 @@ Only the routed child process receives the proxy variables. Global Claude Code s
 
 ### macOS and Linux
 
-`scripts/claude-9router` is the POSIX counterpart of the PowerShell entry: same config file, same lookup order, same validation and the same wording when it refuses one. There is no installer on these platforms, so you run it out of the clone and put it on your own PATH if you want a bare command:
+`scripts/claude-9router` and `scripts/vscode-switch` are the POSIX counterparts of the two PowerShell entries: same config file, same lookup order, same validation and the same wording when they refuse one. There is no installer on these platforms, so you run them out of the clone and put them on your own PATH if you want bare commands:
 
 ```sh
 git clone https://github.com/vinhnguyenthanhdn/claude-router.git
@@ -101,28 +103,38 @@ cp config.example.json config.local.json   # then fill in baseUrl, authToken, ma
 ./scripts/claude-9router --dry-run          # print the endpoint and model, do not start Claude
 ./scripts/claude-9router                    # routed session
 ./scripts/claude-9router -p "Hello"         # remaining arguments go to Claude Code untouched
+./scripts/vscode-switch status              # is the VSCode panel routed right now?
+./scripts/vscode-switch on                  # route the panel, then reload the VSCode window
+./scripts/vscode-switch off                 # send the panel back to its default environment
 ```
 
-Two differences from the Windows entry, both because POSIX shells and PowerShell disagree about flags: options are `--dry-run` and `--config <path>` rather than `-DryRun` and `-ConfigPath`, and `--` ends the launcher's own options so a Claude argument of the same name reaches Claude.
+Two differences from the Windows entries, both because POSIX shells and PowerShell disagree about flags: options are `--dry-run`, `--config <path>` and `--settings <path>` rather than `-DryRun`, `-ConfigPath` and `-SettingsPath`, and `--` ends the launcher's own options so a Claude argument of the same name reaches Claude.
 
-What is **not** ported: `install.ps1` (so no PATH entry and no managed copy under your profile), `uninstall.ps1`, and `vscode-switch.ps1` — the VSCode panel on macOS is [#10](https://github.com/vinhnguyenthanhdn/claude-router/issues/10) and Linux packaging is [#6](https://github.com/vinhnguyenthanhdn/claude-router/issues/6). Node is required, as it is the JSON parser for the shell path; Claude Code already requires it.
+`vscode-switch` defaults to the macOS settings path, `~/Library/Application Support/Code/User/settings.json`. On Linux the file lives elsewhere and is tracked with the rest of Linux packaging in [#6](https://github.com/vinhnguyenthanhdn/claude-router/issues/6); until that lands, pass `--settings ~/.config/Code/User/settings.json` (or wherever your distribution puts it) and everything else behaves the same.
+
+What is **not** ported: `install.ps1` (so no PATH entry and no managed copy under your profile) and `uninstall.ps1`. Node is required, as it is the JSON parser for the shell path; Claude Code already requires it.
 
 ### VSCode extension
 
 The panel needs its own switch because it does not inherit your terminal. Exporting `ANTHROPIC_BASE_URL` in a shell — or letting `claude-9router` export it for a session — only reaches processes that shell starts, and the extension starts its own Claude process from VSCode. So a terminal session can be routed while the panel next to it is still talking to Anthropic directly, with nothing in either place saying so.
 
-What the extension does read is its own setting, `claudeCode.environmentVariables`: an array of `{ name, value }` pairs applied when it launches Claude. That setting is where `vscode-switch.ps1` writes, and it is why the two modes are separate commands rather than one.
+What the extension does read is its own setting, `claudeCode.environmentVariables`: an array of `{ name, value }` pairs applied when it launches Claude. That setting is where the switch writes, and it is why the two modes are separate commands rather than one.
 
 ```powershell
-# Enable routing for the native Claude Code panel/sidebar
-& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" on
-
-# Show the current mode (token is never printed)
-& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" status
-
-# Return to the default/direct Anthropic environment
-& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" off
+# Windows
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" on       # enable routing for the panel
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" status   # current mode (token is never printed)
+& "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" off      # back to the default/direct environment
 ```
+
+```sh
+# macOS and Linux
+./scripts/vscode-switch on
+./scripts/vscode-switch status
+./scripts/vscode-switch off
+```
+
+Both sides own exactly the six names the toolkit manages. Every other entry in that array, and every other setting in the file, is written back as it was, and the file is backed up to `settings.json.bak-claude-router` before the first change. A settings file the switch cannot parse is refused before it is copied or written — which also means the presence of that backup always tells you a write was attempted.
 
 Run **Developer: Reload Window** or restart VSCode after `on` or `off`. The setting has machine scope, so it affects every VSCode workspace on that machine.
 

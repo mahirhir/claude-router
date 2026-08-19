@@ -70,12 +70,32 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+      # Found by extension or shebang, not by a list of names. A list has to be
+      # edited every time a script is added, and the edit that is forgotten is
+      # invisible: the step stays green while the new script is never parsed.
       - name: Parse shell scripts
         run: |
-          for file in scripts/*.sh scripts/claude-9router tests/*.sh; do
+          set -eu
+          found=0
+          for file in $(git ls-files); do
+            case "$file" in
+              *.sh) ;;
+              *)
+                case "$(head -c 32 "$file" 2>/dev/null)" in
+                  '#!/bin/sh'*|'#!/usr/bin/env sh'*) ;;
+                  *) continue ;;
+                esac
+                ;;
+            esac
             echo "Parsing $file"
             sh -n "$file"
+            found=$((found + 1))
           done
+          echo "Parsed $found shell script(s)."
+          if [ "$found" -eq 0 ]; then
+            echo "No file carried a POSIX sh shebang — the scan must never be empty."
+            exit 1
+          fi
 
       - name: Run isolated behavior tests
         run: sh tests/run-tests.sh

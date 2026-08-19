@@ -27,15 +27,17 @@ powershell -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 
 The tests use temporary directories and must never mutate real Claude Code or VSCode settings.
 
-The POSIX side — the config layer and the terminal launcher — has its own suite, which needs only a shell and Node:
+The POSIX side — the config layer, the terminal launcher and the VSCode switch — has its own suite, which needs only a shell and Node:
 
 ```sh
 sh tests/run-tests.sh
 ```
 
-`scripts/common.sh` is the counterpart of `scripts/Common.ps1`: it finds `config.local.json` in the same precedence order, applies the same validation, and fails with the same wording. Node parses the JSON because Claude Code already requires Node, so it is not a new dependency; `jq` and `python3` would be. `scripts/claude-9router` is built on it and is the worked example: it sources `common.sh` and spends none of its own code on reading or validating a config. The macOS VSCode switch (#10) and the Linux packaging (#6) should do the same rather than re-reading the config themselves, so the two platforms cannot drift into disagreeing about what a valid config is.
+`scripts/common.sh` is the counterpart of `scripts/Common.ps1`: it finds `config.local.json` in the same precedence order, applies the same validation, and fails with the same wording. Node parses the JSON because Claude Code already requires Node, so it is not a new dependency; `jq` and `python3` would be. `scripts/claude-9router` and `scripts/vscode-switch` are built on it: both source `common.sh` and spend none of their own code on reading or validating a config. Linux packaging (#6) should do the same rather than re-reading the config itself, so the two platforms cannot drift into disagreeing about what a valid config is.
 
-The launcher's cases assert the **environment the child process receives**, not the text of the script, using a stub `claude` on `PATH` that reports each managed variable as its value or `<unset>`. Keep that distinction if you add cases: a blank `ANTHROPIC_SMALL_FAST_MODEL` still reads as configured to the CLI, so "removed" and "set to empty" are different outcomes and only one of them is correct.
+Both suites assert **what the user would observe**, not the text of the script. The launcher's cases read the environment the child process receives, using a stub `claude` on `PATH` that reports each managed variable as its value or `<unset>`; a blank `ANTHROPIC_SMALL_FAST_MODEL` still reads as configured to the CLI, so "removed" and "set to empty" are different outcomes and only one of them is correct. The VSCode switch's cases read the settings file back after the run, because the promise being tested is about a file the user also edits by hand: what survived, what was replaced, and what was never written.
+
+Shell scripts are parsed in CI by extension or shebang rather than from a list of filenames, so a new script is covered the moment it is committed. If you add one that is neither `*.sh` nor `#!/bin/sh`, widen the discovery in [`.github/workflows/test.yml`](.github/workflows/test.yml) instead of appending a name — a forgotten name leaves the step green while the script is never parsed at all.
 
 ### Contributing without a Windows machine
 

@@ -137,7 +137,7 @@ The variables, the removal of a conflicting `ANTHROPIC_API_KEY`, and the promise
 - The config is looked up in the same order, but the last two candidates resolve to `scripts/config.local.json` and `config.local.json` in the clone rather than under `%USERPROFILE%\.claude\9router`. `CLAUDE_ROUTER_CONFIG` works the same way and is the cleanest way to keep the config outside the clone.
 - Because you run the clone directly, `git pull` **is** the upgrade — the gap section 8 describes does not exist here. The other half of it still does: `config.local.json` is copied once, so a key added to the example later is absent from yours.
 
-Section 6 is Windows-only: the VSCode panel switch is not ported ([#10](https://github.com/vinhnguyenthanhdn/claude-router/issues/10)).
+Section 6 applies here too, with `./scripts/vscode-switch` in place of `vscode-switch.ps1`.
 
 ## 6. Use the native VSCode extension
 
@@ -159,15 +159,30 @@ Return to the default/direct environment:
 & "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" off
 ```
 
-After `on` or `off`, restart VSCode or run **Developer: Reload Window**. The extension reads its environment when its Claude process starts.
+On macOS and Linux the same three modes run out of the clone:
 
-The switcher updates only toolkit-managed entries under `claudeCode.environmentVariables`; unrelated VSCode settings and unrelated environment entries are preserved. Before each mutation it writes:
-
-```text
-%APPDATA%\Code\User\settings.json.bak-claude-router
+```sh
+./scripts/vscode-switch on
+./scripts/vscode-switch status
+./scripts/vscode-switch off
 ```
 
-The extension setting has machine scope, so it affects all workspaces in that VSCode installation.
+The default settings file is the macOS one, `~/Library/Application Support/Code/User/settings.json`. On Linux, point it at your distribution's path until Linux packaging lands ([#6](https://github.com/vinhnguyenthanhdn/claude-router/issues/6)):
+
+```sh
+./scripts/vscode-switch on --settings ~/.config/Code/User/settings.json
+```
+
+After `on` or `off`, restart VSCode or run **Developer: Reload Window**. The extension reads its environment when its Claude process starts.
+
+The switcher updates only toolkit-managed entries under `claudeCode.environmentVariables`; unrelated VSCode settings and unrelated environment entries are preserved. Before each mutation it writes a backup beside the settings file:
+
+```text
+%APPDATA%\Code\User\settings.json.bak-claude-router                       (Windows)
+~/Library/Application Support/Code/User/settings.json.bak-claude-router   (macOS)
+```
+
+A settings file that is not valid JSON is refused before the backup is taken, so that file appearing always means a write was attempted rather than merely considered. The extension setting has machine scope, so it affects all workspaces in that VSCode installation.
 
 ## 7. Switch providers or models
 
@@ -212,6 +227,12 @@ If VSCode settings must be restored manually:
 ```powershell
 Copy-Item "$env:APPDATA\Code\User\settings.json.bak-claude-router" `
           "$env:APPDATA\Code\User\settings.json" -Force
+```
+
+```sh
+# macOS
+cd ~/Library/Application\ Support/Code/User
+cp settings.json.bak-claude-router settings.json
 ```
 
 Uninstall:
