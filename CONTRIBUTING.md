@@ -39,6 +39,8 @@ Both suites assert **what the user would observe**, not the text of the script. 
 
 Shell scripts are parsed in CI by extension or shebang rather than from a list of filenames, so a new script is covered the moment it is committed. If you add one that is neither `*.sh` nor `#!/bin/sh`, widen the discovery in [`.github/workflows/test.yml`](.github/workflows/test.yml) instead of appending a name — a forgotten name leaves the step green while the script is never parsed at all.
 
+The same rule decides which files must be committed executable: every tracked file whose first line is a shebang is asserted at git mode `100755`, and the scan fails if it matches nothing. `scripts/common.sh` is sourced rather than run and carries no shebang, so it is correctly left out. You do not have to remember `chmod +x` — but if your clone has `core.fileMode=false`, git ignores the local mode and the file lands at `100644`; fix it with `git update-index --chmod=+x <path>`.
+
 ### Contributing without a Windows machine
 
 You do not need Windows to send a pull request here. Every pull request, including one from a fork, runs [`.github/workflows/test.yml`](.github/workflows/test.yml) on `windows-latest`: JSON validation, a PowerShell parse of every `.ps1`, the secret scan, and the full `tests/run-tests.ps1` suite. That is the same suite you would run locally, on a real Windows PowerShell host.

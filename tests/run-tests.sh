@@ -610,12 +610,34 @@ check_eq '--help exits 0' "$(field "$out" '$')" 'STATUS=0'
 # core.fileMode=false ignores a local `chmod +x`, so a script can run for the
 # author and land in the repository unexecutable — every case above then fails
 # in CI with "Permission denied" and none of them fail here.
+#
+# Which files this covers is a question about the files, not a list kept by
+# hand: a first line that is a shebang says the file is meant to be run
+# directly. `scripts/common.sh` is sourced rather than run and carries no
+# shebang, so the same rule leaves it alone. A hand-copied list has to be
+# edited every time a script is added, and nothing reports the omission — that
+# is how `tests/vscode-switch-jsonc.sh` landed at mode 100644.
 
 if (cd "$root" && git rev-parse --git-dir >/dev/null 2>&1); then
-    for entry in scripts/claude-9router scripts/vscode-switch tests/run-tests.sh; do
+    scanned=0
+    for entry in $(cd "$root" && git ls-files); do
+        [ -f "$root/$entry" ] || continue
+        case "$(head -n 1 -- "$root/$entry" 2>/dev/null)" in
+            '#!'*) ;;
+            *) continue ;;
+        esac
+        scanned=$((scanned + 1))
         mode=$(cd "$root" && git ls-files -s "$entry" | cut -d' ' -f1)
         check_eq "$entry is committed executable" "$mode" '100755'
     done
+    # A scan that finds nothing is a broken scan, not a clean repository.
+    # Without this the block turns into a silent no-op the first time the
+    # layout moves, and it still reports success.
+    if [ "$scanned" -gt 0 ]; then
+        ok "scanned $scanned file(s) with a shebang"
+    else
+        fail 'no file with a shebang was found — the scan is broken'
+    fi
 else
     ok 'entry script modes skipped (not a git checkout)'
 fi
