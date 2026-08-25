@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Tracked files, not whatever sits in the worktree: the question is
       # whether what ships parses. And a scan that finds nothing is a broken
@@ -96,10 +96,10 @@ jobs:
         node: [18, 22]
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
 
