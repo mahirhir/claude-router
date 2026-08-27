@@ -60,13 +60,16 @@ try {
         if ($loaded.SmallFastModel -ne 'test/custom-small') { throw 'Custom CLAUDE_ROUTER_CONFIG SmallFastModel mismatch.' }
 
         $env:CLAUDE_ROUTER_CONFIG = Join-Path $temp 'non-existent-config.json'
-        $failedAsExpected = $false
+        $errorMessage = $null
         try {
             Get-RouterConfig | Out-Null
         } catch {
-            $failedAsExpected = $true
+            $errorMessage = $_.Exception.Message
         }
-        if (-not $failedAsExpected) { throw 'Non-existent CLAUDE_ROUTER_CONFIG did not throw.' }
+        if (-not $errorMessage) { throw 'Non-existent CLAUDE_ROUTER_CONFIG did not throw.' }
+        if ($errorMessage -notmatch 'Router config not found') {
+            throw "Unexpected error message for missing config: $errorMessage"
+        }
     } finally {
         $env:CLAUDE_ROUTER_CONFIG = $savedRouterConfigEnv
     }
