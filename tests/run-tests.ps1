@@ -41,6 +41,36 @@ try {
     $names = @($off.'claudeCode.environmentVariables' | ForEach-Object { $_.name })
     if ($names -contains 'ANTHROPIC_BASE_URL' -or $names -notcontains 'KEEP_ME') { throw 'Switch off removed or retained wrong entries.' }
 
+    . (Join-Path $root 'scripts\Common.ps1')
+    $customConfig = Join-Path $temp 'custom.router.config.json'
+    @{
+        baseUrl = 'http://127.0.0.1:20129'
+        authToken = 'test-token-custom'
+        mainModel = 'test/custom-main'
+        smallFastModel = 'test/custom-small'
+    } | ConvertTo-Json | Set-Content -LiteralPath $customConfig -Encoding UTF8
+
+    $savedRouterConfigEnv = $env:CLAUDE_ROUTER_CONFIG
+    try {
+        $env:CLAUDE_ROUTER_CONFIG = $customConfig
+        $loaded = Get-RouterConfig
+        if ($loaded.BaseUrl -ne 'http://127.0.0.1:20129') { throw 'Custom CLAUDE_ROUTER_CONFIG BaseUrl mismatch.' }
+        if ($loaded.AuthToken -ne 'test-token-custom') { throw 'Custom CLAUDE_ROUTER_CONFIG AuthToken mismatch.' }
+        if ($loaded.MainModel -ne 'test/custom-main') { throw 'Custom CLAUDE_ROUTER_CONFIG MainModel mismatch.' }
+        if ($loaded.SmallFastModel -ne 'test/custom-small') { throw 'Custom CLAUDE_ROUTER_CONFIG SmallFastModel mismatch.' }
+
+        $env:CLAUDE_ROUTER_CONFIG = Join-Path $temp 'non-existent-config.json'
+        $failedAsExpected = $false
+        try {
+            Get-RouterConfig | Out-Null
+        } catch {
+            $failedAsExpected = $true
+        }
+        if (-not $failedAsExpected) { throw 'Non-existent CLAUDE_ROUTER_CONFIG did not throw.' }
+    } finally {
+        $env:CLAUDE_ROUTER_CONFIG = $savedRouterConfigEnv
+    }
+
     Write-Host 'All tests passed.' -ForegroundColor Green
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction SilentlyContinue
