@@ -23,10 +23,11 @@ settings_key='claudeCode.environmentVariables'
 mode=''
 config_path=''
 settings_path=''
+insiders=0
 
 usage() {
     cat <<'USAGE'
-Usage: vscode-switch [on|off|status] [--config PATH] [--settings PATH]
+Usage: vscode-switch [on|off|status] [--config PATH] [--settings PATH] [--insiders]
 
   on       route the VSCode Claude Code panel through the configured endpoint
   off      return the panel to its default/direct environment
@@ -34,7 +35,9 @@ Usage: vscode-switch [on|off|status] [--config PATH] [--settings PATH]
 
   --config PATH    router config to read; same precedence as the launcher
   --settings PATH  VSCode settings.json to edit
-                   (default: ~/Library/Application Support/Code/User/settings.json)
+                   (default: ~/Library/Application Support/Code/User/settings.json on macOS,
+                             ~/.config/Code/User/settings.json on Linux)
+  --insiders       target VSCode Insiders edition
 USAGE
 }
 
@@ -63,6 +66,10 @@ while [ $# -gt 0 ]; do
             settings_path="${1#--settings=}"
             shift
             ;;
+        --insiders)
+            insiders=1
+            shift
+            ;;
         -h|--help)
             usage
             exit 0
@@ -76,7 +83,28 @@ while [ $# -gt 0 ]; do
 done
 
 [ -n "$mode" ] || mode='status'
-[ -n "$settings_path" ] || settings_path="$HOME/Library/Application Support/Code/User/settings.json"
+
+if [ -z "$settings_path" ]; then
+    _is_darwin=0
+    if [ "$(uname -s 2>/dev/null)" = "Darwin" ] || [ -d "$HOME/Library/Application Support" ]; then
+        _is_darwin=1
+    fi
+
+    if [ "$_is_darwin" -eq 1 ]; then
+        if [ "$insiders" -eq 1 ]; then
+            settings_path="$HOME/Library/Application Support/Code - Insiders/User/settings.json"
+        else
+            settings_path="$HOME/Library/Application Support/Code/User/settings.json"
+        fi
+    else
+        _config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+        if [ "$insiders" -eq 1 ]; then
+            settings_path="$_config_home/Code - Insiders/User/settings.json"
+        else
+            settings_path="$_config_home/Code/User/settings.json"
+        fi
+    fi
+fi
 
 if [ ! -f "$settings_path" ]; then
     echo "VSCode settings.json not found: $settings_path" >&2

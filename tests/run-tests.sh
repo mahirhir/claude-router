@@ -602,7 +602,14 @@ check_eq 'an unknown argument exits 2' "$(field "$out" '$')" 'STATUS=2'
 
 out=$(vsc --help)
 check_contains '--help lists the three modes' "$out" 'Usage: vscode-switch [on|off|status]'
+check_contains '--help lists --insiders' "$out" '--insiders'
 check_eq '--help exits 0' "$(field "$out" '$')" 'STATUS=0'
+
+# Insiders flag handling
+insiders_file="$temp/insiders-settings.json"
+new_settings "$insiders_file"
+out=$(vsc on --config "$switch_config" --settings "$insiders_file" --insiders)
+check_eq '--insiders flag is accepted for on' "$(field "$out" '$')" 'STATUS=0'
 
 # --- the entry scripts are executable where it counts ----------------------
 #
