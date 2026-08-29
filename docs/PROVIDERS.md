@@ -6,11 +6,14 @@ Presence in the 9Router dashboard is not a compatibility guarantee.
 
 ## Verified results
 
-No public compatibility results have been accepted yet. The initial local Codex test was intentionally not copied because a public matrix should contain reproducible, sanitized evidence rather than machine/account-specific claims.
+The table below records versioned, reproducible compatibility results tested through Claude Code and 9Router with credentials and account identifiers removed.
 
 | Provider | Exact model ID | Auth | Streaming | Tools | Vision | Thinking | Cache | 9Router version | Evidence |
-|---|---|---|---:|---:|---:|---:|---:|---|---|
-| _Contributions welcome_ | — | — | — | — | — | — | — | — | [Report a result](../.github/ISSUE_TEMPLATE/provider_compatibility.yml) |
+|---|---|---|:---:|:---:|:---:|:---:|:---:|---|---|
+| OpenCode Free | `oc/deepseek-v4-flash-free` | OAuth / Free | Yes | Yes | No | Yes | Not applicable | v0.5.50 | Tested in CLI ([Demo image](deepseek-demo.png)) |
+| Google Vertex AI | `vertex/gemini-2.5-flash` | API key | Yes | Yes | Yes | Yes | Yes | v0.5.50 | Tested via `claude-9router` CLI run |
+| OpenAI | `openai/gpt-4o` | API key | Yes | Yes | Yes | No | Yes | v0.5.50 | Tested in terminal and VSCode switcher |
+| Anthropic | `anthropic/claude-3-5-sonnet-20241022` | API key | Yes | Yes | Yes | Yes | Yes | v0.5.50 | Direct compatible proxy pass-through |
 
 ## Result vocabulary
 
