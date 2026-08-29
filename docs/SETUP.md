@@ -62,6 +62,8 @@ The router origin is normally `http://127.0.0.1:20128`. The Claude Code client s
 
 ## 4. Install the switcher
 
+### Option A: Manual script install (from clone)
+
 From the cloned repository:
 
 ```powershell
@@ -74,6 +76,30 @@ The installer:
 - creates `~/.claude/9router/config.local.json` if absent;
 - preserves an existing local config;
 - adds the installation directory to user PATH once.
+
+### Option B: Scoop package manager
+
+```powershell
+scoop install packaging/scoop/claude-router.json
+```
+
+To update via Scoop:
+```powershell
+scoop update claude-router
+```
+
+### Option C: Winget package manager
+
+```powershell
+winget install --manifest packaging/winget/vinhnguyenthanhdn.claude-router.yaml
+```
+
+To update via Winget:
+```powershell
+winget upgrade vinhnguyenthanhdn.claude-router
+```
+
+---
 
 Edit the generated local config:
 

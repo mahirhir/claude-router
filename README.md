@@ -54,8 +54,18 @@ On macOS and Linux both switches work — the terminal launcher and the VSCode p
 See [Complete setup](docs/SETUP.md) for 9Router installation, provider setup, API key creation, model selection, toolkit configuration, recovery, and troubleshooting.
 
 ## Quick start
+ 
+### Via Package Manager (Windows)
 
-Installation is a single command after cloning:
+```powershell
+# Scoop
+scoop install packaging/scoop/claude-router.json
+
+# Winget
+winget install --manifest packaging/winget/vinhnguyenthanhdn.claude-router.yaml
+```
+
+### Via PowerShell Installer
 
 ```powershell
 git clone https://github.com/vinhnguyenthanhdn/claude-router.git

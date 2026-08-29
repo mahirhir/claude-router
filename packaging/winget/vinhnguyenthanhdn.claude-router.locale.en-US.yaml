@@ -1,0 +1,16 @@
+PackageIdentifier: vinhnguyenthanhdn.claude-router
+PackageVersion: 1.0.0
+PackageLocale: en-US
+Publisher: Vinh Nguyen
+PackageName: Claude Router
+License: MIT
+ShortDescription: Multi-account profile switcher and routing utility for Claude CLI and VS Code
+PackageUrl: https://github.com/vinhnguyenthanhdn/claude-router
+Tags:
+  - claude
+  - anthropic
+  - ai
+  - router
+  - profile
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

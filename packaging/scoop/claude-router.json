@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "description": "Multi-account profile switcher and routing utility for Claude CLI and VS Code",
+  "homepage": "https://github.com/vinhnguyenthanhdn/claude-router",
+  "license": "MIT",
+  "url": "https://github.com/vinhnguyenthanhdn/claude-router/archive/refs/tags/v1.0.0.zip",
+  "bin": [
+    ["claude-router.ps1", "claude-router"]
+  ],
+  "checkver": "github",
+  "autoupdate": {
+    "url": "https://github.com/vinhnguyenthanhdn/claude-router/archive/refs/tags/v$version.zip"
+  }
+}

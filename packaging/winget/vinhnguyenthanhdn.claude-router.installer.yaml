@@ -1,0 +1,13 @@
+PackageIdentifier: vinhnguyenthanhdn.claude-router
+PackageVersion: 1.0.0
+Installers:
+  - Architecture: neutral
+    InstallerType: zip
+    InstallerUrl: https://github.com/vinhnguyenthanhdn/claude-router/archive/refs/tags/v1.0.0.zip
+    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: claude-router.ps1
+        PortableCommandAlias: claude-router
+ManifestType: installer
+ManifestVersion: 1.6.0
