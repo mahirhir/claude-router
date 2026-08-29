@@ -92,6 +92,8 @@ claude-9router -DryRun         # Print the endpoint and model, do not start Clau
 
 Only the routed child process receives the proxy variables. Global Claude Code settings remain untouched.
 
+All remaining arguments (such as `--resume`, `doctor`, or `-p "prompt"`) forward directly to `claude`. See [Argument forwarding & shell quoting](docs/SETUP.md#argument-forwarding-and-shell-quoting) for quoting and tab-completion details.
+
 ### macOS and Linux
 
 `scripts/claude-9router` and `scripts/vscode-switch` are the POSIX counterparts of the two PowerShell entries: same config file, same lookup order, same validation and the same wording when they refuse one. There is no installer on these platforms, so you run them out of the clone and put them on your own PATH if you want bare commands:
