@@ -75,6 +75,8 @@ The installer:
 - preserves an existing local config;
 - adds the installation directory to user PATH once.
 
+![Windows Terminal Installation](windows-install.png)
+
 Edit the generated local config:
 
 ```powershell
