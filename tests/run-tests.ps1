@@ -166,6 +166,40 @@ try {
         if ($emptyError -notmatch [regex]::Escape($emptyPropConfig)) {
             throw "Empty property config error did not name the offending file path: $emptyError"
         }
+
+        # Test: VSCode Insiders settings path and toggle
+        $insidersSettings = Join-Path $temp 'settings.insiders.json'
+        @{
+            'editor.tabSize' = 2
+            'claudeCode.environmentVariables' = @(
+                @{ name = 'INSIDERS_KEEP'; value = 'stay' }
+            )
+        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $insidersSettings -Encoding UTF8
+
+        & (Join-Path $root 'scripts\vscode-switch.ps1') on -ConfigPath $config -SettingsPath $insidersSettings -Insiders
+        if ($LASTEXITCODE -ne 0) { throw 'VSCode Insiders switch on failed.' }
+        $insidersOn = Get-Content -LiteralPath $insidersSettings -Raw | ConvertFrom-Json
+        if ($insidersOn.'editor.tabSize' -ne 2) { throw 'Unrelated Insiders setting changed.' }
+        $insidersKeep = @($insidersOn.'claudeCode.environmentVariables' | Where-Object { $_.name -eq 'INSIDERS_KEEP' })
+        if ($insidersKeep.Count -ne 1 -or $insidersKeep[0].value -ne 'stay') { throw 'Unrelated Insiders environment entry changed.' }
+        $insidersBase = @($insidersOn.'claudeCode.environmentVariables' | Where-Object { $_.name -eq 'ANTHROPIC_BASE_URL' })
+        if ($insidersBase.Count -ne 1 -or $insidersBase[0].value -ne 'http://127.0.0.1:20128') { throw 'Managed entry was not added to Insiders.' }
+
+        & (Join-Path $root 'scripts\vscode-switch.ps1') off -SettingsPath $insidersSettings -Insiders
+        if ($LASTEXITCODE -ne 0) { throw 'VSCode Insiders switch off failed.' }
+        $insidersOff = Get-Content -LiteralPath $insidersSettings -Raw | ConvertFrom-Json
+        $insidersNames = @($insidersOff.'claudeCode.environmentVariables' | ForEach-Object { $_.name })
+        if ($insidersNames -contains 'ANTHROPIC_BASE_URL' -or $insidersNames -notcontains 'INSIDERS_KEEP') { throw 'Insiders switch off removed or retained wrong entries.' }
+
+        # Test: Resolve-VSCodeSettingsPath edition detection
+        $resolvedDefault = Resolve-VSCodeSettingsPath
+        if ($resolvedDefault -notmatch [regex]::Escape('Code\User\settings.json') -and $resolvedDefault -notmatch [regex]::Escape('Code - Insiders\User\settings.json')) {
+            throw "Resolve-VSCodeSettingsPath default path unexpected: $resolvedDefault"
+        }
+        $resolvedInsiders = Resolve-VSCodeSettingsPath -Insiders
+        if ($resolvedInsiders -notmatch [regex]::Escape('Code - Insiders\User\settings.json')) {
+            throw "Resolve-VSCodeSettingsPath -Insiders did not return Insiders path: $resolvedInsiders"
+        }
     } finally {
         $env:CLAUDE_ROUTER_CONFIG = $savedRouterConfigEnv
     }

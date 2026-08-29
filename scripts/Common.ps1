@@ -113,3 +113,28 @@ function Write-JsonFile {
     $json = $Value | ConvertTo-Json -Depth 30
     [IO.File]::WriteAllText($Path, $json + [Environment]::NewLine, (New-Object Text.UTF8Encoding($false)))
 }
+
+function Resolve-VSCodeSettingsPath {
+    param(
+        [string]$SettingsPath,
+        [switch]$Insiders
+    )
+
+    if ($SettingsPath) {
+        return $SettingsPath
+    }
+
+    $appData = if ($env:APPDATA) { $env:APPDATA } else { Join-Path ([Environment]::GetFolderPath('UserProfile')) 'AppData\Roaming' }
+    $folder = if ($Insiders) { 'Code - Insiders' } else { 'Code' }
+    $targetPath = Join-Path $appData (Join-Path $folder 'User\settings.json')
+
+    # If neither -SettingsPath nor -Insiders was specified, but Stable is absent while Insiders exists, auto-detect Insiders
+    if (-not $Insiders -and -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) {
+        $insidersCandidate = Join-Path $appData 'Code - Insiders\User\settings.json'
+        if (Test-Path -LiteralPath $insidersCandidate -PathType Leaf) {
+            return $insidersCandidate
+        }
+    }
+
+    return $targetPath
+}
