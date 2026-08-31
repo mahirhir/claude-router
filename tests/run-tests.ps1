@@ -34,12 +34,23 @@ try {
     if ($base.Count -ne 1 -or $base[0].value -ne 'http://127.0.0.1:20128') { throw 'Managed entry was not replaced.' }
     if (-not (Test-Path -LiteralPath "$settings.bak-claude-router")) { throw 'Backup was not created.' }
 
-    & (Join-Path $root 'scripts\vscode-switch.ps1') status -SettingsPath $settings
+    $statusOnOutput = & (Join-Path $root 'scripts\vscode-switch.ps1') status -SettingsPath $settings 6>&1 | Out-String
+    if ($LASTEXITCODE -ne 0) { throw 'VSCode switch status (on) failed.' }
+    if ($statusOnOutput -notmatch 'router enabled') { throw 'Status (on) did not report router enabled.' }
+    if ($statusOnOutput -notmatch [regex]::Escape('http://127.0.0.1:20128')) { throw 'Status (on) did not report base URL.' }
+    if ($statusOnOutput -match [regex]::Escape('test-token-not-a-secret')) { throw 'Status (on) leaked plaintext authentication token.' }
+    if ($statusOnOutput -notmatch 'Authentication token: configured \(hidden\)') { throw 'Status (on) did not report hidden token state.' }
+
     & (Join-Path $root 'scripts\vscode-switch.ps1') off -SettingsPath $settings
     if ($LASTEXITCODE -ne 0) { throw 'VSCode switch off failed.' }
     $off = Get-Content -LiteralPath $settings -Raw | ConvertFrom-Json
     $names = @($off.'claudeCode.environmentVariables' | ForEach-Object { $_.name })
     if ($names -contains 'ANTHROPIC_BASE_URL' -or $names -notcontains 'KEEP_ME') { throw 'Switch off removed or retained wrong entries.' }
+
+    $statusOffOutput = & (Join-Path $root 'scripts\vscode-switch.ps1') status -SettingsPath $settings 6>&1 | Out-String
+    if ($LASTEXITCODE -ne 0) { throw 'VSCode switch status (off) failed.' }
+    if ($statusOffOutput -notmatch 'direct Anthropic/default environment') { throw 'Status (off) did not report default/direct environment.' }
+    if ($statusOffOutput -match [regex]::Escape('http://127.0.0.1:20128')) { throw 'Status (off) still referenced router base URL.' }
 
     . (Join-Path $root 'scripts\Common.ps1')
     $customConfig = Join-Path $temp 'custom.router.config.json'
