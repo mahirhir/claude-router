@@ -73,23 +73,24 @@ if (config === null || typeof config !== "object" || Array.isArray(config)) {
 
 const read = (name) => (typeof config[name] === "string" ? config[name] : config[name] == null ? "" : String(config[name]));
 for (const name of ["baseUrl", "authToken", "mainModel"]) {
-    if (read(name).trim() === "") die(`Missing required config value: ${name}`);
+    if (!(name in config)) die(`Missing required property '\''${name}'\'' in router config '\''${path}'\''.`);
+    if (read(name).trim() === "") die(`Required property '\''${name}'\'' in router config '\''${path}'\'' cannot be empty.`);
 }
 
 let url;
 try {
     url = new URL(read("baseUrl"));
 } catch {
-    die("baseUrl must be an absolute HTTP or HTTPS URL.");
+    die(`baseUrl must be an absolute HTTP or HTTPS URL in router config '\''${path}'\''.`);
 }
 if (url.protocol !== "http:" && url.protocol !== "https:") {
-    die("baseUrl must be an absolute HTTP or HTTPS URL.");
+    die(`baseUrl must be an absolute HTTP or HTTPS URL in router config '\''${path}'\''.`);
 }
 if (/replace-with|your-api-key|^<.+>$/i.test(read("authToken"))) {
-    die("Replace the placeholder authToken in config.local.json.");
+    die(`Replace the placeholder authToken in router config '\''${path}'\''.`);
 }
 if (/provider\/model-id|^<.+>$/i.test(read("mainModel"))) {
-    die("Replace the placeholder mainModel in config.local.json.");
+    die(`Replace the placeholder mainModel in router config '\''${path}'\''.`);
 }
 
 const values = [

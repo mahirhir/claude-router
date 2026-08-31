@@ -175,31 +175,31 @@ refuse 'a JSON array is not a config' 'Invalid JSON in router config' <<'JSON'
 ["baseUrl", "https://example.test"]
 JSON
 
-refuse 'a missing mainModel is named' 'Missing required config value: mainModel' <<'JSON'
+refuse 'a missing mainModel is named' "Missing required property 'mainModel' in router config" <<'JSON'
 {"baseUrl": "https://example.test", "authToken": "t"}
 JSON
 
-refuse 'a blank authToken is missing, not present' 'Missing required config value: authToken' <<'JSON'
+refuse 'a blank authToken is empty, not missing' "Required property 'authToken' in router config" <<'JSON'
 {"baseUrl": "https://example.test", "authToken": "   ", "mainModel": "vendor/model"}
 JSON
 
-refuse 'a relative baseUrl is refused' 'baseUrl must be an absolute HTTP or HTTPS URL.' <<'JSON'
+refuse 'a relative baseUrl is refused' 'baseUrl must be an absolute HTTP or HTTPS URL in router config' <<'JSON'
 {"baseUrl": "127.0.0.1:20128", "authToken": "t", "mainModel": "vendor/model"}
 JSON
 
-refuse 'a non-HTTP scheme is refused' 'baseUrl must be an absolute HTTP or HTTPS URL.' <<'JSON'
+refuse 'a non-HTTP scheme is refused' 'baseUrl must be an absolute HTTP or HTTPS URL in router config' <<'JSON'
 {"baseUrl": "ftp://example.test", "authToken": "t", "mainModel": "vendor/model"}
 JSON
 
-refuse 'the example authToken placeholder is refused' 'Replace the placeholder authToken' <<'JSON'
+refuse 'the example authToken placeholder is refused' 'Replace the placeholder authToken in router config' <<'JSON'
 {"baseUrl": "https://example.test", "authToken": "replace-with-your-key", "mainModel": "vendor/model"}
 JSON
 
-refuse 'an angle-bracket authToken placeholder is refused' 'Replace the placeholder authToken' <<'JSON'
+refuse 'an angle-bracket authToken placeholder is refused' 'Replace the placeholder authToken in router config' <<'JSON'
 {"baseUrl": "https://example.test", "authToken": "<your token here>", "mainModel": "vendor/model"}
 JSON
 
-refuse 'the example mainModel placeholder is refused' 'Replace the placeholder mainModel' <<'JSON'
+refuse 'the example mainModel placeholder is refused' 'Replace the placeholder mainModel in router config' <<'JSON'
 {"baseUrl": "https://example.test", "authToken": "t", "mainModel": "provider/model-id"}
 JSON
 
@@ -361,7 +361,7 @@ write_config "$bad" <<'JSON'
 {"baseUrl": "", "authToken": "t", "mainModel": "vendor/model"}
 JSON
 out=$(launch --config "$bad")
-check_contains 'a rejected config names the offending field' "$out" 'Missing required config value: baseUrl'
+check_contains 'a rejected config names the offending field' "$out" "Required property 'baseUrl' in router config"
 check_eq 'a rejected config exits non-zero' "$(field "$out" '$')" 'STATUS=1'
 case "$out" in
     *ARGS=*) fail 'a rejected config does not start Claude Code' 'the stub ran anyway' ;;
@@ -571,7 +571,7 @@ rejected="$temp/rejected-settings.json"
 new_settings "$rejected"
 before=$(cat "$rejected")
 out=$(vsc on --config "$bad" --settings "$rejected")
-check_contains 'a rejected config names the offending field' "$out" 'Missing required config value: baseUrl'
+check_contains 'a rejected config names the offending field' "$out" "Required property 'baseUrl' in router config"
 check_eq 'a rejected config exits non-zero' "$(field "$out" '$')" 'STATUS=1'
 check_eq 'a rejected config leaves the settings file untouched' "$(cat "$rejected")" "$before"
 

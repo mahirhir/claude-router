@@ -247,7 +247,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\install.ps1
 
 Re-running it is the upgrade, and it is safe to repeat. It overwrites `Common.ps1`, `claude-9router.ps1`, `claude-9router.cmd`, `vscode-switch.ps1` and `uninstall.ps1` with the versions you just pulled, leaves `config.local.json` exactly as it is (it prints `Preserved existing …`), and adds the install directory to your user `PATH` only if it is not already there.
 
-What it does **not** do is merge new keys into your `config.local.json`. That file is copied from `config.example.json` once, on first install, and never touched again — so if a later version adds a setting, yours will not have it. A missing *required* value (`baseUrl`, `authToken`, `mainModel`) fails loudly on the next launch with `Missing required config value: <name>`; an optional one falls back silently. After an upgrade that mentions a new setting, compare the two files:
+What it does **not** do is merge new keys into your `config.local.json`. That file is copied from `config.example.json` once, on first install, and never touched again — so if a later version adds a setting, yours will not have it. A missing *required* value (`baseUrl`, `authToken`, `mainModel`) fails loudly on the next launch with `Missing required property '<name>' in router config '<path>'.`; an optional one falls back silently. After an upgrade that mentions a new setting, compare the two files:
 
 ```powershell
 Compare-Object (Get-Content .\config.example.json) `
