@@ -121,6 +121,42 @@ claude-9router -p "Reply with exactly: ROUTER_OK"
 
 Then open 9Router **Console Log** and confirm the request was routed to the selected provider/model.
 
+### Argument forwarding and shell quoting
+
+`claude-9router` forwards all remaining arguments directly to the underlying `claude` binary. Because PowerShell, Command Prompt, and POSIX shells parse quotation marks differently, use the appropriate syntax for your shell:
+
+- **Interactive flags and subcommands** work identically across shells:
+  ```powershell
+  claude-9router --resume
+  claude-9router doctor
+  claude-9router update
+  ```
+
+- **Non-interactive prompts (`-p` / `--print`)**:
+  - **PowerShell**: Single quotes preserve literal strings; double quotes allow variable interpolation:
+    ```powershell
+    claude-9router -p 'Summarize the git status and diff'
+    claude-9router -p "Explain what `"zero-dependency`" means"
+    ```
+  - **Command Prompt (`cmd.exe`)**: Always use standard double quotes (single quotes are treated literally by `cmd.exe`):
+    ```cmd
+    claude-9router -p "Summarize the git status and diff"
+    claude-9router -p "Explain what \"zero-dependency\" means"
+    ```
+
+- **Optional: PowerShell Tab Completion**:
+  Add this helper to your PowerShell `$PROFILE` to enable tab completion matching the `claude` CLI:
+  ```powershell
+  Register-ArgumentCompleter -Native -CommandName 'claude-9router' -ScriptBlock {
+      param($wordToComplete, $commandAst, $cursorPosition)
+      [System.Management.Automation.CommandCompletion]::CompleteInput(
+          $commandAst.ToString().Replace('claude-9router', 'claude'),
+          $cursorPosition,
+          $null
+      ).CompletionMatches
+  }
+  ```
+
 ### On macOS and Linux
 
 Step 4 does not apply — there is no installer for these platforms — so the launcher runs out of the clone and the config lives next to it:
