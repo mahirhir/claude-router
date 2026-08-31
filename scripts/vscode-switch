@@ -84,25 +84,20 @@ done
 
 [ -n "$mode" ] || mode='status'
 
+# Resolved, not searched: no flag means the stable edition, present or not,
+# so the not-found error below names the editor the user meant. uname alone
+# decides the platform; VSCode puts user settings under Library on macOS and
+# under $XDG_CONFIG_HOME (defaulting to ~/.config) everywhere else.
 if [ -z "$settings_path" ]; then
-    _is_darwin=0
-    if [ "$(uname -s 2>/dev/null)" = "Darwin" ] || [ -d "$HOME/Library/Application Support" ]; then
-        _is_darwin=1
-    fi
-
-    if [ "$_is_darwin" -eq 1 ]; then
-        if [ "$insiders" -eq 1 ]; then
-            settings_path="$HOME/Library/Application Support/Code - Insiders/User/settings.json"
-        else
-            settings_path="$HOME/Library/Application Support/Code/User/settings.json"
-        fi
+    if [ "$(uname -s)" = 'Darwin' ]; then
+        _config_home="$HOME/Library/Application Support"
     else
         _config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
-        if [ "$insiders" -eq 1 ]; then
-            settings_path="$_config_home/Code - Insiders/User/settings.json"
-        else
-            settings_path="$_config_home/Code/User/settings.json"
-        fi
+    fi
+    if [ "$insiders" -eq 1 ]; then
+        settings_path="$_config_home/Code - Insiders/User/settings.json"
+    else
+        settings_path="$_config_home/Code/User/settings.json"
     fi
 fi
 
