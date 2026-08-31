@@ -124,17 +124,12 @@ function Resolve-VSCodeSettingsPath {
         return $SettingsPath
     }
 
+    # No fallback to the other edition: with both editors installed, silently
+    # picking Insiders would stop routing the editor the user actually runs.
+    # The not-found error downstream prints the resolved path, which already
+    # says which edition was looked for and where.
     $appData = if ($env:APPDATA) { $env:APPDATA } else { Join-Path ([Environment]::GetFolderPath('UserProfile')) 'AppData\Roaming' }
     $folder = if ($Insiders) { 'Code - Insiders' } else { 'Code' }
-    $targetPath = Join-Path $appData (Join-Path $folder 'User\settings.json')
-
-    # If neither -SettingsPath nor -Insiders was specified, but Stable is absent while Insiders exists, auto-detect Insiders
-    if (-not $Insiders -and -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) {
-        $insidersCandidate = Join-Path $appData 'Code - Insiders\User\settings.json'
-        if (Test-Path -LiteralPath $insidersCandidate -PathType Leaf) {
-            return $insidersCandidate
-        }
-    }
-
-    return $targetPath
+    return Join-Path $appData (Join-Path $folder 'User\settings.json')
 }
+

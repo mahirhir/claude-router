@@ -132,6 +132,8 @@ What the extension does read is its own setting, `claudeCode.environmentVariable
 & "$env:USERPROFILE\.claude\9router\vscode-switch.ps1" on -Insiders  # route VSCode Insiders panel
 ```
 
+Without `-Insiders` the switch always targets the stable edition, even when only Insiders is installed; it never picks an editor for you.
+
 ```sh
 # macOS and Linux
 ./scripts/vscode-switch on

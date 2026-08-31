@@ -167,41 +167,50 @@ try {
             throw "Empty property config error did not name the offending file path: $emptyError"
         }
 
-        # Test: VSCode Insiders settings path and toggle
-        $insidersSettings = Join-Path $temp 'settings.insiders.json'
-        @{
-            'editor.tabSize' = 2
-            'claudeCode.environmentVariables' = @(
-                @{ name = 'INSIDERS_KEEP'; value = 'stay' }
-            )
-        } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $insidersSettings -Encoding UTF8
-
-        & (Join-Path $root 'scripts\vscode-switch.ps1') on -ConfigPath $config -SettingsPath $insidersSettings -Insiders
-        if ($LASTEXITCODE -ne 0) { throw 'VSCode Insiders switch on failed.' }
-        $insidersOn = Get-Content -LiteralPath $insidersSettings -Raw | ConvertFrom-Json
-        if ($insidersOn.'editor.tabSize' -ne 2) { throw 'Unrelated Insiders setting changed.' }
-        $insidersKeep = @($insidersOn.'claudeCode.environmentVariables' | Where-Object { $_.name -eq 'INSIDERS_KEEP' })
-        if ($insidersKeep.Count -ne 1 -or $insidersKeep[0].value -ne 'stay') { throw 'Unrelated Insiders environment entry changed.' }
-        $insidersBase = @($insidersOn.'claudeCode.environmentVariables' | Where-Object { $_.name -eq 'ANTHROPIC_BASE_URL' })
-        if ($insidersBase.Count -ne 1 -or $insidersBase[0].value -ne 'http://127.0.0.1:20128') { throw 'Managed entry was not added to Insiders.' }
-
-        & (Join-Path $root 'scripts\vscode-switch.ps1') off -SettingsPath $insidersSettings -Insiders
-        if ($LASTEXITCODE -ne 0) { throw 'VSCode Insiders switch off failed.' }
-        $insidersOff = Get-Content -LiteralPath $insidersSettings -Raw | ConvertFrom-Json
-        $insidersNames = @($insidersOff.'claudeCode.environmentVariables' | ForEach-Object { $_.name })
-        if ($insidersNames -contains 'ANTHROPIC_BASE_URL' -or $insidersNames -notcontains 'INSIDERS_KEEP') { throw 'Insiders switch off removed or retained wrong entries.' }
-
-        # Test: Resolve-VSCodeSettingsPath edition detection
-        $resolvedDefault = Resolve-VSCodeSettingsPath
-        if ($resolvedDefault -notmatch [regex]::Escape('Code\User\settings.json') -and $resolvedDefault -notmatch [regex]::Escape('Code - Insiders\User\settings.json')) {
-            throw "Resolve-VSCodeSettingsPath default path unexpected: $resolvedDefault"
-        }
-        $resolvedInsiders = Resolve-VSCodeSettingsPath -Insiders
-        if ($resolvedInsiders -notmatch [regex]::Escape('Code - Insiders\User\settings.json')) {
-            throw "Resolve-VSCodeSettingsPath -Insiders did not return Insiders path: $resolvedInsiders"
-        }
     } finally {
         $env:CLAUDE_ROUTER_CONFIG = $savedRouterConfigEnv
+    }
+
+    # Resolve-VSCodeSettingsPath reads $env:APPDATA, so the resolution is
+    # testable without any VSCode install: point it at a scratch tree, build
+    # the state each case needs, and assert on the returned path.
+    $savedAppData = $env:APPDATA
+    try {
+        $fakeAppData = Join-Path $temp 'appdata'
+        $stableSettings = Join-Path $fakeAppData 'Code\User\settings.json'
+        $insidersSettings = Join-Path $fakeAppData 'Code - Insiders\User\settings.json'
+        $env:APPDATA = $fakeAppData
+
+        # No flag resolves to stable even when neither editor is installed,
+        # so the not-found error downstream names the editor the user meant.
+        $resolved = Resolve-VSCodeSettingsPath
+        if ($resolved -ne $stableSettings) {
+            throw "Expected the stable path with no flag, got: $resolved"
+        }
+
+        # -Insiders resolves to Insiders, installed or not.
+        $resolved = Resolve-VSCodeSettingsPath -Insiders
+        if ($resolved -ne $insidersSettings) {
+            throw "Expected the Insiders path with -Insiders, got: $resolved"
+        }
+
+        # Only Insiders installed and no flag still resolves to stable: the
+        # switch never silently writes to an editor the user did not name.
+        New-Item -ItemType Directory -Force (Split-Path $insidersSettings) | Out-Null
+        '{}' | Set-Content -LiteralPath $insidersSettings -Encoding UTF8
+        $resolved = Resolve-VSCodeSettingsPath
+        if ($resolved -ne $stableSettings) {
+            throw "No flag must not fall back to the Insiders path, got: $resolved"
+        }
+
+        # An explicit path wins over the flag.
+        $explicitSettings = Join-Path $temp 'explicit-settings.json'
+        $resolved = Resolve-VSCodeSettingsPath -SettingsPath $explicitSettings -Insiders
+        if ($resolved -ne $explicitSettings) {
+            throw "An explicit -SettingsPath must win over -Insiders, got: $resolved"
+        }
+    } finally {
+        $env:APPDATA = $savedAppData
     }
 
     Write-Host 'All tests passed.' -ForegroundColor Green

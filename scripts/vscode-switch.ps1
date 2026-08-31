@@ -12,8 +12,7 @@ $SettingsPath = Resolve-VSCodeSettingsPath $SettingsPath -Insiders:$Insiders
 $settingsKey = 'claudeCode.environmentVariables'
 
 if (-not (Test-Path -LiteralPath $SettingsPath -PathType Leaf)) {
-    $editionName = if ($Insiders) { 'VSCode Insiders' } else { 'VSCode' }
-    Write-Error "$editionName settings.json not found: $SettingsPath"
+    Write-Error "VSCode settings.json not found: $SettingsPath"
     exit 1
 }
 
