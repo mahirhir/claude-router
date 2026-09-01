@@ -145,11 +145,11 @@ if [ "${1:-}" = '--self-test' ]; then
     expect pass 'an unmodified tree agrees' "$scratch/clean"
 
     # Reword one side. This is the exact shape of the change that reached CI
-    # green in #27.
+    # green in #27, applied to the wording that side uses today.
     cp -R "$scratch/clean" "$scratch/reworded"
-    sed 's/Missing required config value: /Missing required property /' \
+    sed 's/Missing required property /Missing mandatory property /' \
         "$scratch/clean/scripts/Common.ps1" > "$scratch/reworded/scripts/Common.ps1"
-    expect fail 'a reworded PowerShell message is caught' "$scratch/reworded" 'Missing required property'
+    expect fail 'a reworded PowerShell message is caught' "$scratch/reworded" 'Missing mandatory property'
 
     # Add a rule to one side only. New refusals drift the same way rewordings do.
     cp -R "$scratch/clean" "$scratch/extra"
