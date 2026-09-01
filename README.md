@@ -112,7 +112,7 @@ cp config.example.json config.local.json   # then fill in baseUrl, authToken, ma
 
 Two differences from the Windows entries, both because POSIX shells and PowerShell disagree about flags: options are `--dry-run`, `--config <path>` and `--settings <path>` rather than `-DryRun`, `-ConfigPath` and `-SettingsPath`, and `--` ends the launcher's own options so a Claude argument of the same name reaches Claude.
 
-`vscode-switch` defaults to the macOS settings path, `~/Library/Application Support/Code/User/settings.json`. On Linux the file lives elsewhere and is tracked with the rest of Linux packaging in [#6](https://github.com/vinhnguyenthanhdn/claude-router/issues/6); until that lands, pass `--settings ~/.config/Code/User/settings.json` (or wherever your distribution puts it) and everything else behaves the same.
+`vscode-switch` resolves the default settings path per platform: `~/Library/Application Support/Code/User/settings.json` on macOS, `$XDG_CONFIG_HOME/Code/User/settings.json` (defaulting to `~/.config`) on Linux. Pass `--insiders` for VSCode Insiders; without it the switch always targets the stable edition, and it never picks an editor for you. `--settings` overrides all of that.
 
 What is **not** ported: `install.ps1` (so no PATH entry and no managed copy under your profile) and `uninstall.ps1`. Node is required, as it is the JSON parser for the shell path; Claude Code already requires it.
 

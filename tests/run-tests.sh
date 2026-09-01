@@ -602,7 +602,41 @@ check_eq 'an unknown argument exits 2' "$(field "$out" '$')" 'STATUS=2'
 
 out=$(vsc --help)
 check_contains '--help lists the three modes' "$out" 'Usage: vscode-switch [on|off|status]'
+check_contains '--help lists --insiders' "$out" '--insiders'
 check_eq '--help exits 0' "$(field "$out" '$')" 'STATUS=0'
+
+# Default settings path resolution. The not-found message prints the resolved
+# path and exits 1, so the resolution is observable with no editor installed:
+# point HOME at an empty tree and read the path back. CI also runs this on
+# macOS, where the defaults live under Library/Application Support, so the
+# expected prefix branches on uname while the edition segment does not.
+no_editor_home="$temp/no-editor-home"
+mkdir -p "$no_editor_home"
+if [ "$(uname -s)" = 'Darwin' ]; then
+    resolved_config_home="$no_editor_home/Library/Application Support"
+else
+    resolved_config_home="$no_editor_home/.config"
+fi
+
+out=$(HOME="$no_editor_home" XDG_CONFIG_HOME='' vsc status)
+check_contains 'no flag resolves the stable default path' "$out" \
+    "VSCode settings.json not found: $resolved_config_home/Code/User/settings.json"
+check_eq 'an unresolvable default path exits 1' "$(field "$out" '$')" 'STATUS=1'
+
+out=$(HOME="$no_editor_home" XDG_CONFIG_HOME='' vsc status --insiders)
+check_contains '--insiders resolves the Insiders default path' "$out" \
+    "VSCode settings.json not found: $resolved_config_home/Code - Insiders/User/settings.json"
+
+# Honored rather than hard-coded to ~/.config; macOS keeps Library either way.
+xdg_home="$temp/xdg-config"
+out=$(HOME="$no_editor_home" XDG_CONFIG_HOME="$xdg_home" vsc status)
+if [ "$(uname -s)" = 'Darwin' ]; then
+    check_contains 'XDG_CONFIG_HOME does not move the macOS default' "$out" \
+        "VSCode settings.json not found: $resolved_config_home/Code/User/settings.json"
+else
+    check_contains 'XDG_CONFIG_HOME moves the Linux default' "$out" \
+        "VSCode settings.json not found: $xdg_home/Code/User/settings.json"
+fi
 
 # --- the entry scripts are executable where it counts ----------------------
 #
