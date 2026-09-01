@@ -47,21 +47,24 @@ function Get-RouterConfig {
 
     foreach ($name in @('baseUrl', 'authToken', 'mainModel')) {
         $property = $config.PSObject.Properties[$name]
-        if ($null -eq $property -or [string]::IsNullOrWhiteSpace([string]$property.Value)) {
-            throw "Missing required config value: $name"
+        if ($null -eq $property) {
+            throw "Missing required property '$name' in router config '$resolved'."
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$property.Value)) {
+            throw "Required property '$name' in router config '$resolved' cannot be empty."
         }
     }
 
     $uri = $null
     if (-not [Uri]::TryCreate([string]$config.baseUrl, [UriKind]::Absolute, [ref]$uri) -or
         $uri.Scheme -notin @('http', 'https')) {
-        throw "baseUrl must be an absolute HTTP or HTTPS URL."
+        throw "baseUrl must be an absolute HTTP or HTTPS URL in router config '$resolved'."
     }
     if ([string]$config.authToken -match 'replace-with|your-api-key|^<.+>$') {
-        throw "Replace the placeholder authToken in config.local.json."
+        throw "Replace the placeholder authToken in router config '$resolved'."
     }
     if ([string]$config.mainModel -match 'provider/model-id|^<.+>$') {
-        throw "Replace the placeholder mainModel in config.local.json."
+        throw "Replace the placeholder mainModel in router config '$resolved'."
     }
 
     $result = [pscustomobject]@{

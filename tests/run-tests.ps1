@@ -111,6 +111,61 @@ try {
         if ($multilineError -notmatch 'single-line') {
             throw "Unexpected error message for a multi-line value: $multilineError"
         }
+
+        # Test: Malformed JSON syntax in config file
+        $malformedConfig = Join-Path $temp 'malformed.config.json'
+        '{ "baseUrl": "http://127.0.0.1:20128", "authToken": ' | Set-Content -LiteralPath $malformedConfig -Encoding UTF8
+        $malformedError = $null
+        try {
+            Get-RouterConfig $malformedConfig | Out-Null
+        } catch {
+            $malformedError = $_.Exception.Message
+        }
+        if (-not $malformedError -or $malformedError -notmatch 'Invalid JSON in router config') {
+            throw "Malformed config did not throw expected invalid JSON error: $malformedError"
+        }
+        if ($malformedError -notmatch [regex]::Escape($malformedConfig)) {
+            throw "Malformed config error did not name the offending file path: $malformedError"
+        }
+
+        # Test: Missing required property (baseUrl missing)
+        $missingPropConfig = Join-Path $temp 'missing-prop.config.json'
+        @{
+            authToken = 'test-token'
+            mainModel = 'test/model'
+        } | ConvertTo-Json | Set-Content -LiteralPath $missingPropConfig -Encoding UTF8
+        $missingError = $null
+        try {
+            Get-RouterConfig $missingPropConfig | Out-Null
+        } catch {
+            $missingError = $_.Exception.Message
+        }
+        if (-not $missingError -or $missingError -notmatch "Missing required property 'baseUrl'") {
+            throw "Missing property config did not throw expected missing property error: $missingError"
+        }
+        if ($missingError -notmatch [regex]::Escape($missingPropConfig)) {
+            throw "Missing property config error did not name the offending file path: $missingError"
+        }
+
+        # Test: Empty string property (authToken is empty string)
+        $emptyPropConfig = Join-Path $temp 'empty-prop.config.json'
+        @{
+            baseUrl = 'http://127.0.0.1:20128'
+            authToken = '   '
+            mainModel = 'test/model'
+        } | ConvertTo-Json | Set-Content -LiteralPath $emptyPropConfig -Encoding UTF8
+        $emptyError = $null
+        try {
+            Get-RouterConfig $emptyPropConfig | Out-Null
+        } catch {
+            $emptyError = $_.Exception.Message
+        }
+        if (-not $emptyError -or $emptyError -notmatch "Required property 'authToken'.*cannot be empty") {
+            throw "Empty property config did not throw expected empty property error: $emptyError"
+        }
+        if ($emptyError -notmatch [regex]::Escape($emptyPropConfig)) {
+            throw "Empty property config error did not name the offending file path: $emptyError"
+        }
     } finally {
         $env:CLAUDE_ROUTER_CONFIG = $savedRouterConfigEnv
     }
