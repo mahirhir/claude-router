@@ -159,7 +159,7 @@ Then open 9Router **Console Log** and confirm the request was routed to the sele
 
 ### On macOS and Linux
 
-`./scripts/install.sh` symlinks `claude-9router` and `vscode-switch` into `~/.local/bin` (pass a different directory as the first argument to change that). The launcher still runs out of the clone — the symlinks point back into it — and the config lives next to it:
+`./scripts/install.sh` installs `claude-9router` and `vscode-switch` into `~/.local/bin` (pass a different directory as the first argument to change that). Each installed name is a two-line wrapper that runs the launcher in the clone, so the launcher still runs out of the clone and the config lives next to it:
 
 ```sh
 cp config.example.json config.local.json   # then fill in baseUrl, authToken, mainModel
@@ -168,7 +168,7 @@ claude-9router --dry-run
 claude-9router -p "Reply with exactly: ROUTER_OK"
 ```
 
-`./scripts/uninstall.sh` removes the symlinks again. Skipping the installer and running `./scripts/claude-9router` from the clone works exactly as before.
+`./scripts/uninstall.sh` removes them again, and removes a name only when it is the wrapper or symlink this clone installed. Skipping the installer and running `./scripts/claude-9router` from the clone works exactly as before.
 
 The variables, the removal of a conflicting `ANTHROPIC_API_KEY`, and the promise not to touch `~/.claude/settings.json` are identical. Three practical differences:
 
